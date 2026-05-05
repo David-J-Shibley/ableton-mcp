@@ -339,6 +339,14 @@ class AbletonMCP(ControlSurface):
     
     # Command implementations
     
+    def _safe_song_property(self, attr, cast, default):
+        """Read self._song.<attr> with cast, returning default on common failures.
+        Catches only narrow exceptions so genuine bugs still surface."""
+        try:
+            return cast(getattr(self._song, attr))
+        except (AttributeError, TypeError, ValueError):
+            return default
+
     def _get_session_info(self):
         """Get information about the current session"""
         try:
@@ -354,29 +362,17 @@ class AbletonMCP(ControlSurface):
                     "panning": self._song.master_track.mixer_device.panning.value
                 },
                 # Transport / playback state — lets clients render a live
-                # playhead without polling separately. All values are best-
-                # effort: wrapped in try/except so older Live versions or
-                # unusual session states never break the existing response
-                # shape.
-                "is_playing": False,
-                "current_song_time": 0.0,
-                "song_length": 0.0,
-                "loop": False,
-                "loop_start": 0.0,
-                "loop_length": 0.0,
+                # playhead without polling separately. Each property is read
+                # via _safe_song_property so an attribute missing on a given
+                # Live version falls back to its default rather than breaking
+                # the response shape.
+                "is_playing":        self._safe_song_property("is_playing",        bool,  False),
+                "current_song_time": self._safe_song_property("current_song_time", float, 0.0),
+                "song_length":       self._safe_song_property("song_length",       float, 0.0),
+                "loop":              self._safe_song_property("loop",              bool,  False),
+                "loop_start":        self._safe_song_property("loop_start",        float, 0.0),
+                "loop_length":       self._safe_song_property("loop_length",       float, 0.0),
             }
-            try: result["is_playing"] = bool(self._song.is_playing)
-            except Exception: pass
-            try: result["current_song_time"] = float(self._song.current_song_time)
-            except Exception: pass
-            try: result["song_length"] = float(self._song.song_length)
-            except Exception: pass
-            try: result["loop"] = bool(self._song.loop)
-            except Exception: pass
-            try: result["loop_start"] = float(self._song.loop_start)
-            except Exception: pass
-            try: result["loop_length"] = float(self._song.loop_length)
-            except Exception: pass
             return result
         except Exception as e:
             self.log_message("Error getting session info: " + str(e))
