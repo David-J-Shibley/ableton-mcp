@@ -758,6 +758,34 @@ class AbletonMCP(ControlSurface):
             self.log_message(traceback.format_exc())
             raise
     
+    # Substring markers that point a URI at a likely root. If no marker
+    # matches we fall back to the default order, so this is purely an
+    # optimisation — never a correctness change.
+    _URI_ROOT_HINTS = (
+        ('plugins',       ('vst:', 'vst3:', 'au:', 'query:plugins', 'plugin#')),
+        ('max_for_live',  ('max for live', 'maxforlive', 'm4l', 'query:max')),
+        ('user_library',  ('user library', 'userlibrary', 'query:user library', 'query:user-library')),
+        ('packs',         ('query:packs', '/packs/')),
+        ('samples',       ('query:samples', 'sample:', '/samples/')),
+        ('drums',         ('query:drums', '/drums/')),
+        ('instruments',   ('query:instruments', '/instruments/')),
+        ('sounds',        ('query:sounds', '/sounds/')),
+        ('audio_effects', ('query:audio effects', 'audioeffects', '/audio_effects/')),
+        ('midi_effects',  ('query:midi effects', 'midieffects', '/midi_effects/')),
+    )
+
+    def _order_roots_by_uri(self, roots, uri):
+        """Reorder ``roots`` so the URI's likely root is walked first."""
+        if not isinstance(uri, (bytes, str)) or not uri:
+            return roots
+        lowered = uri.lower()
+        for attr, markers in self._URI_ROOT_HINTS:
+            if any(m in lowered for m in markers):
+                head = [(a, r) for (a, r) in roots if a == attr]
+                tail = [(a, r) for (a, r) in roots if a != attr]
+                return head + tail
+        return roots
+
     def _find_browser_item_by_uri(self, browser_or_item, uri, max_depth=10, current_depth=0):
         """Find a browser item by its URI.
 
@@ -789,24 +817,21 @@ class AbletonMCP(ControlSurface):
 
             # Check if this is a browser with root categories
             if hasattr(browser_or_item, 'instruments'):
-                # Check all main categories
-                categories = [
-                    browser_or_item.instruments,
-                    browser_or_item.sounds,
-                    browser_or_item.drums,
-                    browser_or_item.audio_effects,
-                    browser_or_item.midi_effects
+                roots = [
+                    ('instruments', browser_or_item.instruments),
+                    ('sounds', browser_or_item.sounds),
+                    ('drums', browser_or_item.drums),
+                    ('audio_effects', browser_or_item.audio_effects),
+                    ('midi_effects', browser_or_item.midi_effects),
                 ]
-                # Walk plugins / max_for_live / user_library / packs / samples
-                # so URIs from get_browser_items_at_path for plugins actually load.
                 for extra_attr in ('plugins', 'max_for_live', 'user_library', 'packs', 'samples'):
                     if hasattr(browser_or_item, extra_attr):
                         try:
-                            categories.append(getattr(browser_or_item, extra_attr))
+                            roots.append((extra_attr, getattr(browser_or_item, extra_attr)))
                         except (AttributeError, RuntimeError) as e:
                             self.log_message("Could not access browser.{0}: {1}".format(extra_attr, str(e)))
 
-                for category in categories:
+                for _attr, category in self._order_roots_by_uri(roots, uri):
                     item = self._find_browser_item_by_uri(category, uri, max_depth, current_depth + 1)
                     if item:
                         return item
