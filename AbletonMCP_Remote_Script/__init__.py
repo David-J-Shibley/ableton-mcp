@@ -2,6 +2,7 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
 from _Framework.ControlSurface import ControlSurface
+import os
 import socket
 import json
 import threading
@@ -227,7 +228,7 @@ class AbletonMCP(ControlSurface):
                 response["result"] = self._get_track_info(track_index)
             # Commands that modify Live's state should be scheduled on the main thread
             elif command_type in ["create_midi_track", "set_track_name",
-                                 "create_clip", "add_notes_to_clip", "set_clip_name",
+                                 "create_clip", "create_audio_clip", "add_notes_to_clip", "set_clip_name",
                                  "set_tempo", "fire_clip", "stop_clip",
                                  "start_playback", "stop_playback", "load_browser_item",
                                  # Arrangement view – must run on the main thread
@@ -252,6 +253,11 @@ class AbletonMCP(ControlSurface):
                             clip_index = params.get("clip_index", 0)
                             length = params.get("length", 4.0)
                             result = self._create_clip(track_index, clip_index, length)
+                        elif command_type == "create_audio_clip":
+                            track_index = params.get("track_index", 0)
+                            clip_index = params.get("clip_index", 0)
+                            path = params.get("path", "")
+                            result = self._create_audio_clip(track_index, clip_index, path)
                         elif command_type == "add_notes_to_clip":
                             track_index = params.get("track_index", 0)
                             clip_index = params.get("clip_index", 0)
@@ -312,9 +318,14 @@ class AbletonMCP(ControlSurface):
                     # If we're already on the main thread, execute directly
                     main_thread_task()
                 
-                # Wait for the response with a timeout
+                # Wait for the response with a timeout. Some commands (notably
+                # create_audio_clip, which decodes/imports the audio file on
+                # the main thread) can take longer than the default 10s on
+                # larger files — give them more headroom.
+                long_running_commands = {"create_audio_clip": 60.0}
+                queue_timeout = long_running_commands.get(command_type, 10.0)
                 try:
-                    task_response = response_queue.get(timeout=10.0)
+                    task_response = response_queue.get(timeout=queue_timeout)
                     if task_response.get("status") == "error":
                         response["status"] = "error"
                         response["message"] = task_response.get("message", "Unknown error")
@@ -518,7 +529,58 @@ class AbletonMCP(ControlSurface):
         except Exception as e:
             self.log_message("Error creating clip: " + str(e))
             raise
-    
+
+    def _create_audio_clip(self, track_index, clip_index, path):
+        """Create an audio clip in the specified audio track clip slot by importing a file.
+
+        Requires Ableton Live 12.0.5 or newer (the underlying
+        ClipSlot.create_audio_clip Live API was introduced in 12.0.5 — it is
+        not available in earlier 12.0.x releases).
+        """
+        try:
+            if not path:
+                raise ValueError("Audio file path is required")
+
+            if not os.path.isabs(path):
+                raise ValueError("Audio file path must be absolute (got: %s)" % path)
+
+            if track_index < 0 or track_index >= len(self._song.tracks):
+                raise IndexError("Track index out of range")
+
+            track = self._song.tracks[track_index]
+
+            # Must be an audio track. Audio tracks expose audio input; MIDI
+            # tracks don't. Reject MIDI / return tracks up front so the caller
+            # gets a clear error instead of a Live API exception.
+            if getattr(track, "has_midi_input", False) or not getattr(track, "has_audio_input", True):
+                raise ValueError("Track %d is not an audio track" % track_index)
+
+            if clip_index < 0 or clip_index >= len(track.clip_slots):
+                raise IndexError("Clip index out of range")
+
+            clip_slot = track.clip_slots[clip_index]
+
+            if clip_slot.has_clip:
+                raise Exception("Clip slot already has a clip")
+
+            if not hasattr(clip_slot, "create_audio_clip"):
+                raise Exception(
+                    "ClipSlot.create_audio_clip is unavailable in this Ableton Live "
+                    "version. Requires Live 12.0.5 or newer."
+                )
+
+            clip_slot.create_audio_clip(path)
+
+            result = {
+                "name": clip_slot.clip.name,
+                "length": clip_slot.clip.length,
+                "is_audio_clip": clip_slot.clip.is_audio_clip
+            }
+            return result
+        except Exception as e:
+            self.log_message("Error creating audio clip: " + str(e))
+            raise
+
     def _add_notes_to_clip(self, track_index, clip_index, notes):
         """Add MIDI notes to a clip"""
         try:

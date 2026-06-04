@@ -109,13 +109,19 @@ class AbletonConnection:
         # Check if this is a state-modifying command
         is_modifying_command = command_type in [
             "create_midi_track", "create_audio_track", "set_track_name",
-            "create_clip", "add_notes_to_clip", "set_clip_name",
+            "create_clip", "create_audio_clip", "add_notes_to_clip", "set_clip_name",
             "set_tempo", "fire_clip", "stop_clip", "set_device_parameter",
             "start_playback", "stop_playback", "load_instrument_or_effect",
             # Arrangement view commands
             "switch_to_arrangement_view", "set_current_song_time",
             "duplicate_session_clip_to_arrangement"
         ]
+
+        # Commands whose work on Live's main thread can take noticeably longer
+        # than the default modifying-command budget (e.g. importing/decoding a
+        # large audio file). Give them a wider socket timeout so we don't time
+        # out before the Remote Script's own queue does.
+        long_running_commands = {"create_audio_clip": 65.0}
         
         try:
             logger.info(f"Sending command: {command_type} with params: {params}")
@@ -125,7 +131,10 @@ class AbletonConnection:
             logger.info(f"Command sent, waiting for response...")
             
             # Set timeout based on command type
-            timeout = 15.0 if is_modifying_command else 10.0
+            if command_type in long_running_commands:
+                timeout = long_running_commands[command_type]
+            else:
+                timeout = 15.0 if is_modifying_command else 10.0
             self.sock.settimeout(timeout)
 
             # Receive the response
@@ -332,6 +341,33 @@ def create_clip(ctx: Context, track_index: int, clip_index: int, length: float =
     except Exception as e:
         logger.error(f"Error creating clip: {str(e)}")
         return f"Error creating clip: {str(e)}"
+
+@mcp.tool()
+def create_audio_clip(ctx: Context, track_index: int, clip_index: int, path: str) -> str:
+    """
+    Create a new audio clip in an audio track's clip slot by importing a file.
+
+    Requires Ableton Live 12.0.5 or newer — the underlying
+    ClipSlot.create_audio_clip Live API was introduced in 12.0.5 and is not
+    available in earlier 12.0.x releases.
+
+    Parameters:
+    - track_index: The index of the audio track to create the clip in
+    - clip_index: The index of the clip slot to create the clip in
+    - path: Absolute path to a supported audio file (e.g. a .wav). The target
+      track must be an audio track and the clip slot must be empty.
+    """
+    try:
+        ableton = get_ableton_connection()
+        result = ableton.send_command("create_audio_clip", {
+            "track_index": track_index,
+            "clip_index": clip_index,
+            "path": path
+        })
+        return f"Created audio clip '{result.get('name', 'clip')}' at track {track_index}, slot {clip_index} (length {result.get('length', '?')} beats)"
+    except Exception as e:
+        logger.error(f"Error creating audio clip: {str(e)}")
+        return f"Error creating audio clip: {str(e)}"
 
 @mcp.tool()
 def add_notes_to_clip(
