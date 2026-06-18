@@ -8,8 +8,15 @@ from dataclasses import dataclass
 from contextlib import asynccontextmanager
 from typing import AsyncIterator, Dict, Any, List, Union
 
+from dotenv import load_dotenv
+
 from .telemetry import record_startup
 from .telemetry_decorator import telemetry_tool, rich_telemetry_tool
+from .extended_tools import register_extended_tools
+from .phase2_tools import register_phase2_tools
+from .phase3_tools import register_phase3_tools
+
+load_dotenv()
 
 ABLETON_HOST = os.environ.get("ABLETON_HOST", "localhost")
 ABLETON_PORT = int(os.environ.get("ABLETON_PORT", "9877"))
@@ -111,20 +118,40 @@ class AbletonConnection:
         
         # Check if this is a state-modifying command
         is_modifying_command = command_type in [
-            "create_midi_track", "create_audio_track", "set_track_name",
+            "create_midi_track", "create_audio_track", "delete_track", "duplicate_track",
+            "set_track_input_routing", "set_track_output_routing",
+            "set_track_name", "set_track_mute", "set_track_solo", "set_track_arm",
+            "set_track_volume", "set_track_pan", "set_send_level", "set_master_volume",
             "create_clip", "create_audio_clip", "add_notes_to_clip", "set_clip_name",
-            "set_tempo", "fire_clip", "stop_clip", "set_device_parameter",
-            "start_playback", "stop_playback", "load_instrument_or_effect",
-            # Arrangement view commands
-            "switch_to_arrangement_view", "set_current_song_time",
-            "duplicate_session_clip_to_arrangement"
+            "delete_clip", "duplicate_clip", "set_clip_color", "set_clip_notes",
+            "remove_clip_notes", "set_clip_loop", "apply_groove",
+            "set_clip_gain", "set_clip_pitch", "set_clip_warp_mode", "set_clip_automation",
+            "load_effect",
+            "set_tempo", "set_time_signature", "fire_clip", "stop_clip",
+            "start_playback", "stop_playback", "start_recording", "stop_recording",
+            "set_overdub", "capture_midi", "set_device_parameter",
+            "create_scene", "fire_scene", "stop_scene", "set_scene_name",
+            "undo", "redo",
+            "load_instrument_or_effect", "load_browser_item",
+            "switch_to_arrangement_view", "set_current_song_time", "jump_to_time",
+            "duplicate_session_clip_to_arrangement",
+            "create_arrangement_clip", "import_audio_to_arrangement",
+            "move_arrangement_clip", "set_arrangement_loop",
+            "create_locator", "delete_locator", "set_locator_name", "create_take_lane",
+            "import_audio_to_take_lane",
+            "add_notes_to_arrangement_clip", "set_arrangement_clip_notes",
+            "remove_arrangement_clip_notes",
         ]
 
         # Commands whose work on Live's main thread can take noticeably longer
         # than the default modifying-command budget (e.g. importing/decoding a
         # large audio file). Give them a wider socket timeout so we don't time
         # out before the Remote Script's own queue does.
-        long_running_commands = {"create_audio_clip": 65.0}
+        long_running_commands = {
+            "create_audio_clip": 65.0,
+            "import_audio_to_arrangement": 65.0,
+            "import_audio_to_take_lane": 65.0,
+        }
         
         try:
             logger.info(f"Sending command: {command_type} with params: {params}")
@@ -839,6 +866,28 @@ def duplicate_to_arrangement(
     except Exception as e:
         logger.error(f"Error duplicating clip to arrangement: {str(e)}")
         return f"Error duplicating clip to arrangement: {str(e)}"
+
+
+register_extended_tools(
+    mcp,
+    get_ableton_connection=get_ableton_connection,
+    telemetry_tool=telemetry_tool,
+    rich_telemetry_tool=rich_telemetry_tool,
+)
+
+register_phase2_tools(
+    mcp,
+    get_ableton_connection=get_ableton_connection,
+    telemetry_tool=telemetry_tool,
+    rich_telemetry_tool=rich_telemetry_tool,
+)
+
+register_phase3_tools(
+    mcp,
+    get_ableton_connection=get_ableton_connection,
+    telemetry_tool=telemetry_tool,
+    rich_telemetry_tool=rich_telemetry_tool,
+)
 
 
 # Main execution

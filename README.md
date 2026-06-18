@@ -1,4 +1,39 @@
 # AbletonMCP - Ableton Live Model Context Protocol Integration
+
+> **Shibley fork** — based on [ahujasid/ableton-mcp](https://github.com/ahujasid/ableton-mcp) (2.7k★, battle-tested).  
+> Part of the **Suno → Ableton → SoundCloud → DistroKid** pipeline.  
+> See `.cursor/skills/ableton-mcp/SKILL.md` for pipeline workflows.
+
+### Quick setup (this fork)
+
+```bash
+cd ~/projects/ableton-mcp
+python3 -m venv .venv && source .venv/bin/activate
+pip install -e .
+python scripts/install_remote_script.py
+```
+
+Then in Ableton: **Preferences → Link, Tempo & MIDI → Control Surface → AbletonMCP** (Input/Output: None).
+
+After updating the Remote Script, re-run `python scripts/install_remote_script.py` and restart Ableton.
+
+**85 MCP tools** — see `docs/FEATURE_GAP.md`. Multi-machine setup: `docs/SETUP_OTHER_MACHINE.md`.
+
+Add to `~/.cursor/mcp.json` (telemetry disabled by default):
+
+```json
+"ableton": {
+  "command": "/Users/davidshibley/projects/ableton-mcp/.venv/bin/python",
+  "args": ["-m", "MCP_Server.server"],
+  "cwd": "/Users/davidshibley/projects/ableton-mcp",
+  "env": {
+    "ABLETON_MCP_DISABLE_TELEMETRY": "true",
+    "DYLD_LIBRARY_PATH": "/opt/homebrew/opt/expat/lib"
+  }
+}
+```
+
+---
 [![smithery badge](https://smithery.ai/badge/@ahujasid/ableton-mcp)](https://smithery.ai/server/@ahujasid/ableton-mcp)
 
 AbletonMCP connects Ableton Live to Claude AI through the Model Context Protocol (MCP), allowing Claude to directly interact with and control Ableton Live. This integration enables prompt-assisted music production, end-to-end track creation, and Live session and arrangement manipulation.
