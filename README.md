@@ -19,19 +19,76 @@ After updating the Remote Script, re-run `python scripts/install_remote_script.p
 
 **111 MCP tools** — see `docs/FEATURE_GAP.md`. Multi-machine setup: `docs/SETUP_OTHER_MACHINE.md`.
 
-Add to `~/.cursor/mcp.json` (telemetry disabled by default):
+### MCP client setup
+
+Use the **local fork** (not `uvx ableton-mcp` — that installs upstream without Phase 4 tools). Replace `/ABSOLUTE/PATH/TO/ableton-mcp` with your clone path.
+
+**Only run one MCP instance** — Cursor *or* Claude, not both at once.
+
+#### Cursor
+
+Add to `~/.cursor/mcp.json` inside `mcpServers`:
 
 ```json
 "ableton": {
-  "command": "/Users/davidshibley/projects/ableton-mcp/.venv/bin/python",
-  "args": ["-m", "MCP_Server.server"],
-  "cwd": "/Users/davidshibley/projects/ableton-mcp",
+  "command": "/ABSOLUTE/PATH/TO/ableton-mcp/.venv/bin/ableton-mcp",
+  "cwd": "/ABSOLUTE/PATH/TO/ableton-mcp",
   "env": {
     "ABLETON_MCP_DISABLE_TELEMETRY": "true",
     "DYLD_LIBRARY_PATH": "/opt/homebrew/opt/expat/lib"
   }
 }
 ```
+
+Reload MCP servers in Cursor settings after saving.
+
+#### Claude Desktop
+
+1. Open **Claude → Settings → Developer → Edit Config**
+2. Edit `claude_desktop_config.json`:
+   - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+   - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+3. Add (merge with any existing `mcpServers`):
+
+```json
+{
+  "mcpServers": {
+    "ableton": {
+      "command": "/ABSOLUTE/PATH/TO/ableton-mcp/.venv/bin/ableton-mcp",
+      "cwd": "/ABSOLUTE/PATH/TO/ableton-mcp",
+      "env": {
+        "ABLETON_MCP_DISABLE_TELEMETRY": "true",
+        "DYLD_LIBRARY_PATH": "/opt/homebrew/opt/expat/lib"
+      }
+    }
+  }
+}
+```
+
+4. **Quit Claude completely** (Cmd+Q on Mac) and reopen
+5. Confirm the connector icon shows `ableton` as connected
+
+**Verify:** Ask Claude to run `get_session_info` (Ableton must be open with a set loaded).
+
+**Logs:** `~/Library/Logs/Claude/` (macOS) or `%APPDATA%\Claude\logs\` (Windows)
+
+#### Claude Code (CLI)
+
+```bash
+claude mcp add-json ableton '{
+  "type": "stdio",
+  "command": "/ABSOLUTE/PATH/TO/ableton-mcp/.venv/bin/ableton-mcp",
+  "cwd": "/ABSOLUTE/PATH/TO/ableton-mcp",
+  "env": {
+    "ABLETON_MCP_DISABLE_TELEMETRY": "true",
+    "DYLD_LIBRARY_PATH": "/opt/homebrew/opt/expat/lib"
+  }
+}' --scope global
+```
+
+Start a session and run `/mcp` to confirm `ableton` is connected.
+
+On Apple Silicon Mac, keep `DYLD_LIBRARY_PATH` if Python fails to start. Omit it on other platforms if not needed.
 
 ---
 [![smithery badge](https://smithery.ai/badge/@ahujasid/ableton-mcp)](https://smithery.ai/server/@ahujasid/ableton-mcp)
@@ -63,11 +120,13 @@ The system consists of two main components:
 
 ### Installing via Smithery
 
-To install Ableton Live Integration for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@ahujasid/ableton-mcp):
+To install the **upstream** package automatically via [Smithery](https://smithery.ai/server/@ahujasid/ableton-mcp) (does not include this fork's Phase 4 tools):
 
 ```bash
 npx -y @smithery/cli install @ahujasid/ableton-mcp --client claude
 ```
+
+For this fork, use the **MCP client setup** steps at the top of the README instead.
 
 ### Prerequisites
 
@@ -83,35 +142,6 @@ brew install uv
 Otherwise, install from [uv's official website][https://docs.astral.sh/uv/getting-started/installation/]
 
 ⚠️ Do not proceed before installing UV
-
-### Claude for Desktop Integration
-
-[Follow along with the setup instructions video](https://youtu.be/iJWJqyVuPS8)
-
-1. Go to Claude > Settings > Developer > Edit Config > claude_desktop_config.json to include the following:
-
-```json
-{
-    "mcpServers": {
-        "AbletonMCP": {
-            "command": "uvx",
-            "args": [
-                "ableton-mcp"
-            ]
-        }
-    }
-}
-```
-
-### Cursor Integration
-
-Run ableton-mcp without installing it permanently through uvx. Go to Cursor Settings > MCP and paste this as a command:
-
-```
-uvx ableton-mcp
-```
-
-⚠️ Only run one instance of the MCP server (either on Cursor or Claude Desktop), not both
 
 ### Installing the Ableton Remote Script
 
@@ -232,21 +262,7 @@ Or use any of these alternatives:
 - `DISABLE_TELEMETRY=true`
 - `MCP_DISABLE_TELEMETRY=true`
 
-For Claude Desktop, add the environment variable to your config:
-
-```json
-{
-    "mcpServers": {
-        "AbletonMCP": {
-            "command": "uvx",
-            "args": ["ableton-mcp"],
-            "env": {
-                "ABLETON_MCP_DISABLE_TELEMETRY": "true"
-            }
-        }
-    }
-}
-```
+For Claude Desktop or Cursor, add `"ABLETON_MCP_DISABLE_TELEMETRY": "true"` to the `env` block in your MCP config (see **MCP client setup** above).
 
 ## Disclaimer
 
