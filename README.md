@@ -17,7 +17,7 @@ Then in Ableton: **Preferences → Link, Tempo & MIDI → Control Surface → Ab
 
 After updating the Remote Script, re-run `python scripts/install_remote_script.py` and restart Ableton.
 
-**85 MCP tools** — see `docs/FEATURE_GAP.md`. Multi-machine setup: `docs/SETUP_OTHER_MACHINE.md`.
+**111 MCP tools** — see `docs/FEATURE_GAP.md`. Multi-machine setup: `docs/SETUP_OTHER_MACHINE.md`.
 
 Add to `~/.cursor/mcp.json` (telemetry disabled by default):
 

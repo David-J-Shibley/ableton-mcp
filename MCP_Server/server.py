@@ -15,6 +15,7 @@ from .telemetry_decorator import telemetry_tool, rich_telemetry_tool
 from .extended_tools import register_extended_tools
 from .phase2_tools import register_phase2_tools
 from .phase3_tools import register_phase3_tools
+from .phase4_tools import register_phase4_tools
 
 load_dotenv()
 
@@ -883,6 +884,13 @@ register_phase2_tools(
 )
 
 register_phase3_tools(
+    mcp,
+    get_ableton_connection=get_ableton_connection,
+    telemetry_tool=telemetry_tool,
+    rich_telemetry_tool=rich_telemetry_tool,
+)
+
+register_phase4_tools(
     mcp,
     get_ableton_connection=get_ableton_connection,
     telemetry_tool=telemetry_tool,

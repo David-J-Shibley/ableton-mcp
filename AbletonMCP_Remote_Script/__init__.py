@@ -250,7 +250,15 @@ class AbletonMCP(ControlSurface):
                                  "create_locator", "delete_locator", "set_locator_name",
                                  "create_take_lane", "import_audio_to_take_lane",
                                  "add_notes_to_arrangement_clip", "set_arrangement_clip_notes",
-                                 "remove_arrangement_clip_notes"]:
+                                 "remove_arrangement_clip_notes",
+                                 # Phase 4 — devices, racks, presets
+                                 "insert_device", "delete_device", "load_preset_by_path",
+                                 "set_rack_macro", "add_rack_macro", "remove_rack_macro",
+                                 "set_rack_visible_macros", "randomize_rack_macros",
+                                 "store_rack_variation", "recall_rack_variation",
+                                 "delete_rack_variation", "insert_rack_chain",
+                                 "set_chain_name", "set_chain_volume", "set_drum_chain_note",
+                                 "set_device_parameter_by_name", "set_chain_device_parameter"]:
                 # Use a thread-safe approach with a response queue
                 response_queue = queue.Queue()
                 
@@ -363,7 +371,7 @@ class AbletonMCP(ControlSurface):
                         elif command_type == "load_instrument_or_effect":
                             track_index = params.get("track_index", 0)
                             uri = params.get("uri", "")
-                            result = self._load_instrument_or_effect(track_index, uri)
+                            result = self._load_browser_item(track_index, uri)
                         elif command_type == "load_browser_item":
                             track_index = params.get("track_index", 0)
                             item_uri = params.get("item_uri", "")
@@ -510,6 +518,99 @@ class AbletonMCP(ControlSurface):
                                 params.get("pitch_span", 128),
                                 params.get("from_time", 0.0),
                                 params.get("time_span", 999999.0))
+                        elif command_type == "insert_device":
+                            result = self._insert_device(
+                                params.get("track_index", 0),
+                                params.get("device_name", ""),
+                                params.get("position", -1),
+                                params.get("device_index"),
+                                params.get("chain_index"))
+                        elif command_type == "delete_device":
+                            result = self._delete_device(
+                                params.get("track_index", 0),
+                                params.get("device_index", 0))
+                        elif command_type == "load_preset_by_path":
+                            result = self._load_preset_by_path(
+                                params.get("track_index", 0),
+                                params.get("path", ""))
+                        elif command_type == "set_rack_macro":
+                            result = self._set_rack_macro(
+                                params.get("track_index", 0),
+                                params.get("device_index", 0),
+                                params.get("macro_index", 0),
+                                params.get("value", 0.0))
+                        elif command_type == "add_rack_macro":
+                            result = self._add_rack_macro(
+                                params.get("track_index", 0),
+                                params.get("device_index", 0))
+                        elif command_type == "remove_rack_macro":
+                            result = self._remove_rack_macro(
+                                params.get("track_index", 0),
+                                params.get("device_index", 0))
+                        elif command_type == "set_rack_visible_macros":
+                            result = self._set_rack_visible_macros(
+                                params.get("track_index", 0),
+                                params.get("device_index", 0),
+                                params.get("count", 8))
+                        elif command_type == "randomize_rack_macros":
+                            result = self._randomize_rack_macros(
+                                params.get("track_index", 0),
+                                params.get("device_index", 0))
+                        elif command_type == "store_rack_variation":
+                            result = self._store_rack_variation(
+                                params.get("track_index", 0),
+                                params.get("device_index", 0))
+                        elif command_type == "recall_rack_variation":
+                            result = self._recall_rack_variation(
+                                params.get("track_index", 0),
+                                params.get("device_index", 0),
+                                params.get("variation_index", 0))
+                        elif command_type == "delete_rack_variation":
+                            result = self._delete_rack_variation(
+                                params.get("track_index", 0),
+                                params.get("device_index", 0),
+                                params.get("variation_index", 0))
+                        elif command_type == "insert_rack_chain":
+                            result = self._insert_rack_chain(
+                                params.get("track_index", 0),
+                                params.get("device_index", 0),
+                                params.get("position", -1))
+                        elif command_type == "set_chain_name":
+                            result = self._set_chain_name(
+                                params.get("track_index", 0),
+                                params.get("device_index", 0),
+                                params.get("chain_index", 0),
+                                params.get("name", ""))
+                        elif command_type == "set_chain_volume":
+                            result = self._set_chain_volume(
+                                params.get("track_index", 0),
+                                params.get("device_index", 0),
+                                params.get("chain_index", 0),
+                                params.get("volume"),
+                                params.get("pan"),
+                                params.get("mute"),
+                                params.get("solo"))
+                        elif command_type == "set_drum_chain_note":
+                            result = self._set_drum_chain_note(
+                                params.get("track_index", 0),
+                                params.get("device_index", 0),
+                                params.get("chain_index", 0),
+                                params.get("note", 36))
+                        elif command_type == "set_device_parameter_by_name":
+                            result = self._set_device_parameter_by_name(
+                                params.get("track_index", 0),
+                                params.get("device_index", 0),
+                                params.get("parameter_name", ""),
+                                params.get("value", 0.0))
+                        elif command_type == "set_chain_device_parameter":
+                            result = self._set_chain_device_parameter(
+                                params.get("track_index", 0),
+                                params.get("rack_index", 0),
+                                params.get("chain_index", 0),
+                                params.get("chain_device_index", 0),
+                                params.get("parameter_index", 0),
+                                params.get("value", 0.0),
+                                params.get("parameter_name"))
 
                         # Put the result in the queue
                         response_queue.put({"status": "success", "result": result})
@@ -607,6 +708,35 @@ class AbletonMCP(ControlSurface):
                     params.get("track_index", 0), params.get("clip_index", 0))
             elif command_type == "get_master_info":
                 response["result"] = self._get_master_info()
+            elif command_type == "get_device_info":
+                response["result"] = self._get_device_info(
+                    params.get("track_index", 0), params.get("device_index", 0))
+            elif command_type == "get_device_tree":
+                response["result"] = self._get_device_tree(
+                    params.get("track_index", 0), params.get("device_index", 0))
+            elif command_type == "get_device_parameters_detailed":
+                response["result"] = self._get_device_parameters_detailed(
+                    params.get("track_index", 0), params.get("device_index", 0),
+                    params.get("rack_index"), params.get("chain_index"),
+                    params.get("chain_device_index"))
+            elif command_type == "get_rack_info":
+                response["result"] = self._get_rack_info(
+                    params.get("track_index", 0), params.get("device_index", 0))
+            elif command_type == "get_rack_macros":
+                response["result"] = self._get_rack_macros(
+                    params.get("track_index", 0), params.get("device_index", 0))
+            elif command_type == "get_macro_mappings":
+                response["result"] = self._get_macro_mappings(
+                    params.get("track_index", 0), params.get("device_index", 0))
+            elif command_type == "get_rack_variations":
+                response["result"] = self._get_rack_variations(
+                    params.get("track_index", 0), params.get("device_index", 0))
+            elif command_type == "get_rack_chains":
+                response["result"] = self._get_rack_chains(
+                    params.get("track_index", 0), params.get("device_index", 0))
+            elif command_type == "find_browser_by_path":
+                response["result"] = self._find_browser_by_path(
+                    params.get("path", ""), params.get("max_results", 10))
             else:
                 response["status"] = "error"
                 response["message"] = "Unknown command: " + command_type
@@ -1818,7 +1948,10 @@ class AbletonMCP(ControlSurface):
                         walk(child, child_path)
 
             roots = []
-            for attr in ("instruments", "sounds", "drums", "audio_effects", "midi_effects"):
+            for attr in (
+                "user_library", "packs", "instruments", "sounds", "drums",
+                "audio_effects", "midi_effects", "max_for_live", "plugins",
+            ):
                 if hasattr(browser, attr) and (category_type == "all" or category_type == attr):
                     roots.append((attr, getattr(browser, attr)))
 
@@ -2088,6 +2221,737 @@ class AbletonMCP(ControlSurface):
             return self._load_browser_item(track_index, uri)
         except Exception as e:
             self.log_message("Error loading effect: " + str(e))
+            raise
+
+    # ── Phase 4: devices, racks, presets, M4L introspection ────────────────
+
+    def _serialize_parameter(self, parameter, parameter_index):
+        info = {
+            "index": parameter_index,
+            "name": str(parameter.name),
+            "value": float(parameter.value),
+            "min": float(parameter.min),
+            "max": float(parameter.max),
+            "is_quantized": bool(parameter.is_quantized),
+        }
+        for attr in ("original_name", "display_value", "default_value", "is_enabled", "automation_state", "state"):
+            if hasattr(parameter, attr):
+                try:
+                    val = getattr(parameter, attr)
+                    if attr in ("display_value", "default_value", "value"):
+                        info[attr] = float(val)
+                    elif attr in ("is_enabled", "is_quantized"):
+                        info[attr] = bool(val)
+                    else:
+                        info[attr] = val if isinstance(val, (int, float, bool)) else str(val)
+                except Exception:
+                    pass
+        if parameter.is_quantized and hasattr(parameter, "value_items"):
+            try:
+                info["value_items"] = [str(v) for v in parameter.value_items]
+            except Exception:
+                pass
+        if hasattr(parameter, "str_for_value"):
+            try:
+                info["display_string"] = str(parameter.str_for_value(parameter.value))
+            except Exception:
+                pass
+        return info
+
+    def _rack_or_raise(self, track_index, device_index):
+        device = self._device_or_raise(track_index, device_index)
+        if not device.can_have_chains:
+            raise ValueError("Device is not a rack")
+        return device
+
+    def _chain_or_raise(self, track_index, rack_index, chain_index):
+        rack = self._rack_or_raise(track_index, rack_index)
+        chains = list(rack.chains)
+        if chain_index < 0 or chain_index >= len(chains):
+            raise IndexError("Chain index out of range")
+        return rack, chains[chain_index]
+
+    def _chain_device_or_raise(self, track_index, rack_index, chain_index, chain_device_index):
+        rack, chain = self._chain_or_raise(track_index, rack_index, chain_index)
+        devices = list(chain.devices)
+        if chain_device_index < 0 or chain_device_index >= len(devices):
+            raise IndexError("Chain device index out of range")
+        return rack, chain, devices[chain_device_index]
+
+    def _rack_macro_parameters(self, rack):
+        macros = []
+        for index, parameter in enumerate(rack.parameters):
+            original = str(getattr(parameter, "original_name", parameter.name) or "")
+            name = str(parameter.name or "")
+            if original.startswith("Macro ") or name.startswith("Macro "):
+                macros.append((index, parameter))
+        return macros
+
+    def _browser_category_roots(self, browser):
+        roots = []
+        for attr in (
+            "user_library", "packs", "instruments", "sounds", "drums",
+            "audio_effects", "midi_effects", "max_for_live", "plugins",
+            "samples", "clips", "current_project",
+        ):
+            if hasattr(browser, attr):
+                try:
+                    roots.append((attr, getattr(browser, attr)))
+                except Exception:
+                    pass
+        return roots
+
+    def _normalize_filesystem_path(self, path):
+        return os.path.normpath(os.path.expanduser(path or ""))
+
+    def _find_browser_item_by_path(self, browser, file_path, max_depth=14):
+        target = self._normalize_filesystem_path(file_path)
+        target_base = os.path.basename(target).lower()
+
+        def matches(item):
+            if not getattr(item, "is_loadable", False):
+                return False
+            if hasattr(item, "source"):
+                try:
+                    source = self._normalize_filesystem_path(str(item.source))
+                    if source == target:
+                        return True
+                except Exception:
+                    pass
+            name = str(getattr(item, "name", "") or "").lower()
+            if name == target_base or name == target_base.rsplit(".", 1)[0]:
+                return True
+            return False
+
+        def walk(item, depth, path_parts):
+            if depth > max_depth:
+                return None
+            if matches(item):
+                return item
+            if hasattr(item, "children") and item.children:
+                for child in item.children:
+                    child_name = str(getattr(child, "name", "") or "")
+                    found = walk(child, depth + 1, path_parts + [child_name])
+                    if found:
+                        return found
+            return None
+
+        for root_name, root_item in self._browser_category_roots(browser):
+            found = walk(root_item, 0, [root_name])
+            if found:
+                return found
+        return None
+
+    def _find_browser_by_path(self, path, max_results=10):
+        try:
+            app = self.application()
+            if not app or not hasattr(app, "browser"):
+                raise RuntimeError("Browser is not available")
+            browser = app.browser
+            target = self._normalize_filesystem_path(path)
+            target_base = os.path.basename(target).lower()
+            target_lower = target.lower()
+            results = []
+
+            def walk(item, depth, browser_path):
+                if depth > 14 or len(results) >= max_results:
+                    return
+                name = str(getattr(item, "name", "") or "")
+                uri = getattr(item, "uri", None)
+                source = None
+                if hasattr(item, "source"):
+                    try:
+                        source = str(item.source)
+                    except Exception:
+                        pass
+                source_norm = self._normalize_filesystem_path(source) if source else ""
+                matched = False
+                if target_base and name.lower() == target_base:
+                    matched = True
+                elif source_norm and (source_norm == target or source_norm.lower().endswith(target_lower)):
+                    matched = True
+                elif target_lower in browser_path.lower():
+                    matched = True
+                if matched:
+                    results.append({
+                        "name": name,
+                        "path": browser_path,
+                        "uri": uri,
+                        "source": source,
+                        "is_loadable": bool(getattr(item, "is_loadable", False)),
+                        "is_device": bool(getattr(item, "is_device", False)),
+                    })
+                if hasattr(item, "children") and item.children:
+                    for child in item.children:
+                        child_name = str(getattr(child, "name", "") or "")
+                        walk(child, depth + 1, browser_path + "/" + child_name)
+
+            for root_name, root_item in self._browser_category_roots(browser):
+                walk(root_item, 0, root_name)
+
+            return {"path": path, "items": results}
+        except Exception as e:
+            self.log_message("Error finding browser by path: " + str(e))
+            raise
+
+    def _load_preset_by_path(self, track_index, path):
+        try:
+            track = self._track_or_raise(track_index)
+            app = self.application()
+            item = self._find_browser_item_by_path(app.browser, path)
+            if not item:
+                raise ValueError("Preset not found in browser for path: " + str(path))
+            devices_before = len(list(track.devices))
+            self._song.view.selected_track = track
+            app.browser.load_item(item)
+            devices_after = len(list(track.devices))
+            return {
+                "loaded": True,
+                "path": path,
+                "item_name": str(item.name),
+                "uri": getattr(item, "uri", None),
+                "track_index": track_index,
+                "track_name": track.name,
+                "devices_before": devices_before,
+                "devices_after": devices_after,
+            }
+        except Exception as e:
+            self.log_message("Error loading preset by path: " + str(e))
+            raise
+
+    def _insert_device(self, track_index, device_name, position=-1, rack_index=None, chain_index=None):
+        try:
+            if not device_name:
+                raise ValueError("device_name is required")
+            track = self._track_or_raise(track_index)
+            if rack_index is not None and chain_index is not None:
+                rack, chain = self._chain_or_raise(track_index, rack_index, chain_index)
+                if not hasattr(chain, "insert_device"):
+                    raise RuntimeError("chain.insert_device requires Live 12.3+")
+                before = len(list(chain.devices))
+                if position is None or int(position) < 0:
+                    chain.insert_device(device_name)
+                else:
+                    chain.insert_device(device_name, int(position))
+                after = list(chain.devices)
+                return {
+                    "track_index": track_index,
+                    "rack_index": rack_index,
+                    "chain_index": chain_index,
+                    "device_name": device_name,
+                    "position": position,
+                    "devices_before": before,
+                    "devices_after": len(after),
+                    "new_device_name": after[-1].name if len(after) > before else None,
+                }
+            if not hasattr(track, "insert_device"):
+                raise RuntimeError("track.insert_device requires Live 12.3+")
+            before = len(list(track.devices))
+            if position is None or int(position) < 0:
+                track.insert_device(device_name)
+            else:
+                track.insert_device(device_name, int(position))
+            after = list(track.devices)
+            return {
+                "track_index": track_index,
+                "device_name": device_name,
+                "position": position,
+                "devices_before": before,
+                "devices_after": len(after),
+                "new_device_name": after[-1].name if len(after) > before else None,
+            }
+        except Exception as e:
+            self.log_message("Error inserting device: " + str(e))
+            raise
+
+    def _delete_device(self, track_index, device_index):
+        try:
+            track = self._track_or_raise(track_index)
+            devices = list(track.devices)
+            if device_index < 0 or device_index >= len(devices):
+                raise IndexError("Device index out of range")
+            name = devices[device_index].name
+            track.delete_device(device_index)
+            return {
+                "track_index": track_index,
+                "deleted_index": device_index,
+                "name": name,
+                "devices_remaining": len(list(track.devices)),
+            }
+        except Exception as e:
+            self.log_message("Error deleting device: " + str(e))
+            raise
+
+    def _get_device_info(self, track_index, device_index):
+        try:
+            device = self._device_or_raise(track_index, device_index)
+            info = {
+                "track_index": track_index,
+                "device_index": device_index,
+                "name": str(device.name),
+                "class_name": str(device.class_name),
+                "class_display_name": str(getattr(device, "class_display_name", device.name)),
+                "type": self._get_device_type(device),
+                "can_have_chains": bool(device.can_have_chains),
+                "can_have_drum_pads": bool(getattr(device, "can_have_drum_pads", False)),
+                "parameter_count": len(list(device.parameters)),
+                "is_active": bool(getattr(device, "is_active", True)),
+            }
+            if device.can_have_chains:
+                rack = device
+                info.update({
+                    "chain_count": len(list(rack.chains)),
+                    "return_chain_count": len(list(rack.return_chains)),
+                    "visible_macro_count": int(getattr(rack, "visible_macro_count", 0)),
+                    "has_macro_mappings": bool(getattr(rack, "has_macro_mappings", False)),
+                    "has_drum_pads": bool(getattr(rack, "has_drum_pads", False)),
+                    "variation_count": int(getattr(rack, "variation_count", 0)),
+                })
+            if str(device.class_name) == "PluginDevice" or "MxDevice" in str(device.class_name):
+                info["is_plugin_or_m4l"] = True
+            return info
+        except Exception as e:
+            self.log_message("Error getting device info: " + str(e))
+            raise
+
+    def _build_device_tree_node(self, device, depth=0, path=""):
+        node = {
+            "path": path,
+            "depth": depth,
+            "name": str(device.name),
+            "class_name": str(device.class_name),
+            "class_display_name": str(getattr(device, "class_display_name", device.name)),
+            "type": self._get_device_type(device),
+            "parameter_count": len(list(device.parameters)),
+            "can_have_chains": bool(device.can_have_chains),
+        }
+        children = []
+        if device.can_have_chains:
+            for chain_index, chain in enumerate(device.chains):
+                for dev_index, nested in enumerate(chain.devices):
+                    child_path = "%s/%d/%d" % (path, chain_index, dev_index)
+                    children.append(self._build_device_tree_node(nested, depth + 1, child_path))
+        node["children"] = children
+        return node
+
+    def _get_device_tree(self, track_index, device_index):
+        try:
+            device = self._device_or_raise(track_index, device_index)
+            return {
+                "track_index": track_index,
+                "device_index": device_index,
+                "tree": self._build_device_tree_node(device, 0, str(device_index)),
+            }
+        except Exception as e:
+            self.log_message("Error getting device tree: " + str(e))
+            raise
+
+    def _get_device_parameters_detailed(
+        self, track_index, device_index, rack_index=None, chain_index=None, chain_device_index=None
+    ):
+        try:
+            if rack_index is not None and chain_index is not None and chain_device_index is not None:
+                _, _, device = self._chain_device_or_raise(
+                    track_index, rack_index, chain_index, chain_device_index)
+                resolved = {
+                    "rack_index": rack_index,
+                    "chain_index": chain_index,
+                    "chain_device_index": chain_device_index,
+                }
+            else:
+                device = self._device_or_raise(track_index, device_index)
+                resolved = {"device_index": device_index}
+            parameters = []
+            for index, parameter in enumerate(device.parameters):
+                parameters.append(self._serialize_parameter(parameter, index))
+            return {
+                "track_index": track_index,
+                "device_name": str(device.name),
+                "class_name": str(device.class_name),
+                "class_display_name": str(getattr(device, "class_display_name", device.name)),
+                "parameters": parameters,
+                **resolved,
+            }
+        except Exception as e:
+            self.log_message("Error getting detailed device parameters: " + str(e))
+            raise
+
+    def _set_device_parameter_by_name(self, track_index, device_index, parameter_name, value):
+        try:
+            device = self._device_or_raise(track_index, device_index)
+            target = (parameter_name or "").strip().lower()
+            if not target:
+                raise ValueError("parameter_name is required")
+            for index, parameter in enumerate(device.parameters):
+                names = [str(parameter.name).lower()]
+                if hasattr(parameter, "original_name"):
+                    names.append(str(parameter.original_name).lower())
+                if target in names:
+                    return self._set_device_parameter(track_index, device_index, index, value)
+            raise ValueError("Parameter not found: " + parameter_name)
+        except Exception as e:
+            self.log_message("Error setting device parameter by name: " + str(e))
+            raise
+
+    def _set_chain_device_parameter(
+        self, track_index, rack_index, chain_index, chain_device_index,
+        parameter_index=None, value=0.0, parameter_name=None
+    ):
+        try:
+            _, _, device = self._chain_device_or_raise(
+                track_index, rack_index, chain_index, chain_device_index)
+            if parameter_name:
+                target = parameter_name.strip().lower()
+                for index, parameter in enumerate(device.parameters):
+                    names = [str(parameter.name).lower()]
+                    if hasattr(parameter, "original_name"):
+                        names.append(str(parameter.original_name).lower())
+                    if target in names:
+                        parameter_index = index
+                        break
+                if parameter_index is None:
+                    raise ValueError("Parameter not found in chain device: " + parameter_name)
+            parameters = list(device.parameters)
+            if parameter_index < 0 or parameter_index >= len(parameters):
+                raise IndexError("Parameter index out of range")
+            parameter = parameters[parameter_index]
+            value = float(value)
+            if value < parameter.min or value > parameter.max:
+                raise ValueError(
+                    "Value must be between %s and %s" % (parameter.min, parameter.max))
+            parameter.value = value
+            return {
+                "track_index": track_index,
+                "rack_index": rack_index,
+                "chain_index": chain_index,
+                "chain_device_index": chain_device_index,
+                "device_name": str(device.name),
+                "parameter_index": parameter_index,
+                "parameter_name": str(parameter.name),
+                "value": float(parameter.value),
+            }
+        except Exception as e:
+            self.log_message("Error setting chain device parameter: " + str(e))
+            raise
+
+    def _get_rack_info(self, track_index, device_index):
+        try:
+            rack = self._rack_or_raise(track_index, device_index)
+            return {
+                "track_index": track_index,
+                "device_index": device_index,
+                "name": str(rack.name),
+                "chain_count": len(list(rack.chains)),
+                "return_chain_count": len(list(rack.return_chains)),
+                "visible_macro_count": int(getattr(rack, "visible_macro_count", 0)),
+                "has_macro_mappings": bool(getattr(rack, "has_macro_mappings", False)),
+                "has_drum_pads": bool(getattr(rack, "has_drum_pads", False)),
+                "variation_count": int(getattr(rack, "variation_count", 0)),
+                "selected_variation_index": int(getattr(rack, "selected_variation_index", -1)),
+                "can_show_chains": bool(getattr(rack, "can_show_chains", False)),
+                "is_showing_chains": bool(getattr(rack, "is_showing_chains", False)),
+            }
+        except Exception as e:
+            self.log_message("Error getting rack info: " + str(e))
+            raise
+
+    def _get_rack_macros(self, track_index, device_index):
+        try:
+            rack = self._rack_or_raise(track_index, device_index)
+            macros = []
+            for macro_index, (parameter_index, parameter) in enumerate(self._rack_macro_parameters(rack)):
+                macros.append({
+                    "macro_index": macro_index,
+                    "parameter_index": parameter_index,
+                    "name": str(parameter.name),
+                    "original_name": str(getattr(parameter, "original_name", parameter.name)),
+                    "value": float(parameter.value),
+                    "min": float(parameter.min),
+                    "max": float(parameter.max),
+                    "is_enabled": bool(getattr(parameter, "is_enabled", True)),
+                })
+            return {
+                "track_index": track_index,
+                "device_index": device_index,
+                "visible_macro_count": int(getattr(rack, "visible_macro_count", len(macros))),
+                "has_macro_mappings": bool(getattr(rack, "has_macro_mappings", False)),
+                "macros": macros,
+            }
+        except Exception as e:
+            self.log_message("Error getting rack macros: " + str(e))
+            raise
+
+    def _get_macro_mappings(self, track_index, device_index):
+        try:
+            rack = self._rack_or_raise(track_index, device_index)
+            mappings = []
+            macro_params = self._rack_macro_parameters(rack)
+            for macro_index, (parameter_index, parameter) in enumerate(macro_params):
+                original = str(getattr(parameter, "original_name", parameter.name))
+                name = str(parameter.name)
+                mapped_to = None
+                if original.startswith("Macro ") and name != original:
+                    mapped_to = name
+                mappings.append({
+                    "macro_index": macro_index,
+                    "parameter_index": parameter_index,
+                    "macro_label": name,
+                    "original_name": original,
+                    "mapped_to": mapped_to,
+                    "value": float(parameter.value),
+                    "has_mapping": mapped_to is not None,
+                })
+            controlled = []
+            for chain_index, chain in enumerate(rack.chains):
+                for dev_index, nested in enumerate(chain.devices):
+                    for param_index, param in enumerate(nested.parameters):
+                        if hasattr(param, "is_enabled") and not param.is_enabled:
+                            controlled.append({
+                                "chain_index": chain_index,
+                                "chain_device_index": dev_index,
+                                "device_name": str(nested.name),
+                                "parameter_index": param_index,
+                                "parameter_name": str(param.name),
+                                "original_name": str(getattr(param, "original_name", param.name)),
+                                "value": float(param.value),
+                            })
+            return {
+                "track_index": track_index,
+                "device_index": device_index,
+                "has_macro_mappings": bool(getattr(rack, "has_macro_mappings", False)),
+                "note": "LOM cannot create new macro mappings programmatically; load pre-mapped .adg/.adv presets instead.",
+                "macros": mappings,
+                "macro_controlled_parameters": controlled,
+            }
+        except Exception as e:
+            self.log_message("Error getting macro mappings: " + str(e))
+            raise
+
+    def _set_rack_macro(self, track_index, device_index, macro_index, value):
+        try:
+            rack = self._rack_or_raise(track_index, device_index)
+            macros = self._rack_macro_parameters(rack)
+            if macro_index < 0 or macro_index >= len(macros):
+                raise IndexError("Macro index out of range")
+            parameter_index, parameter = macros[macro_index]
+            value = float(value)
+            if value < parameter.min or value > parameter.max:
+                raise ValueError(
+                    "Value must be between %s and %s" % (parameter.min, parameter.max))
+            parameter.value = value
+            return {
+                "track_index": track_index,
+                "device_index": device_index,
+                "macro_index": macro_index,
+                "parameter_index": parameter_index,
+                "name": str(parameter.name),
+                "value": float(parameter.value),
+            }
+        except Exception as e:
+            self.log_message("Error setting rack macro: " + str(e))
+            raise
+
+    def _add_rack_macro(self, track_index, device_index):
+        try:
+            rack = self._rack_or_raise(track_index, device_index)
+            if not hasattr(rack, "add_macro"):
+                raise RuntimeError("add_macro requires Live 11+")
+            before = int(getattr(rack, "visible_macro_count", 0))
+            rack.add_macro()
+            after = int(getattr(rack, "visible_macro_count", before + 1))
+            return {"visible_macro_count": after}
+        except Exception as e:
+            self.log_message("Error adding rack macro: " + str(e))
+            raise
+
+    def _remove_rack_macro(self, track_index, device_index):
+        try:
+            rack = self._rack_or_raise(track_index, device_index)
+            if not hasattr(rack, "remove_macro"):
+                raise RuntimeError("remove_macro requires Live 11+")
+            before = int(getattr(rack, "visible_macro_count", 0))
+            rack.remove_macro()
+            after = int(getattr(rack, "visible_macro_count", max(0, before - 1)))
+            return {"visible_macro_count": after}
+        except Exception as e:
+            self.log_message("Error removing rack macro: " + str(e))
+            raise
+
+    def _set_rack_visible_macros(self, track_index, device_index, count):
+        try:
+            rack = self._rack_or_raise(track_index, device_index)
+            count = max(1, min(16, int(count)))
+            if not hasattr(rack, "add_macro") or not hasattr(rack, "remove_macro"):
+                raise RuntimeError("Macro count control requires Live 11+")
+            current = int(getattr(rack, "visible_macro_count", 8))
+            while current < count:
+                rack.add_macro()
+                current = int(getattr(rack, "visible_macro_count", current + 1))
+            while current > count:
+                rack.remove_macro()
+                current = int(getattr(rack, "visible_macro_count", current - 1))
+            return {"visible_macro_count": int(getattr(rack, "visible_macro_count", count))}
+        except Exception as e:
+            self.log_message("Error setting rack visible macros: " + str(e))
+            raise
+
+    def _randomize_rack_macros(self, track_index, device_index):
+        try:
+            rack = self._rack_or_raise(track_index, device_index)
+            if not hasattr(rack, "randomize_macros"):
+                raise RuntimeError("randomize_macros requires Live 11+")
+            rack.randomize_macros()
+            return self._get_rack_macros(track_index, device_index)
+        except Exception as e:
+            self.log_message("Error randomizing rack macros: " + str(e))
+            raise
+
+    def _get_rack_variations(self, track_index, device_index):
+        try:
+            rack = self._rack_or_raise(track_index, device_index)
+            return {
+                "variation_count": int(getattr(rack, "variation_count", 0)),
+                "selected_variation_index": int(getattr(rack, "selected_variation_index", -1)),
+                "visible_macro_count": int(getattr(rack, "visible_macro_count", 0)),
+            }
+        except Exception as e:
+            self.log_message("Error getting rack variations: " + str(e))
+            raise
+
+    def _store_rack_variation(self, track_index, device_index):
+        try:
+            rack = self._rack_or_raise(track_index, device_index)
+            if not hasattr(rack, "store_variation"):
+                raise RuntimeError("store_variation requires Live 11+")
+            rack.store_variation()
+            return self._get_rack_variations(track_index, device_index)
+        except Exception as e:
+            self.log_message("Error storing rack variation: " + str(e))
+            raise
+
+    def _recall_rack_variation(self, track_index, device_index, variation_index):
+        try:
+            rack = self._rack_or_raise(track_index, device_index)
+            if not hasattr(rack, "recall_selected_variation"):
+                raise RuntimeError("recall_selected_variation requires Live 11+")
+            rack.selected_variation_index = int(variation_index)
+            rack.recall_selected_variation()
+            return self._get_rack_variations(track_index, device_index)
+        except Exception as e:
+            self.log_message("Error recalling rack variation: " + str(e))
+            raise
+
+    def _delete_rack_variation(self, track_index, device_index, variation_index):
+        try:
+            rack = self._rack_or_raise(track_index, device_index)
+            if not hasattr(rack, "delete_selected_variation"):
+                raise RuntimeError("delete_selected_variation requires Live 11+")
+            rack.selected_variation_index = int(variation_index)
+            rack.delete_selected_variation()
+            return self._get_rack_variations(track_index, device_index)
+        except Exception as e:
+            self.log_message("Error deleting rack variation: " + str(e))
+            raise
+
+    def _insert_rack_chain(self, track_index, device_index, position=-1):
+        try:
+            rack = self._rack_or_raise(track_index, device_index)
+            if not hasattr(rack, "insert_chain"):
+                raise RuntimeError("insert_chain requires Live 12.3+")
+            before = len(list(rack.chains))
+            if position is None or int(position) < 0:
+                rack.insert_chain()
+            else:
+                rack.insert_chain(int(position))
+            after = list(rack.chains)
+            return {
+                "chain_count": len(after),
+                "new_chain_index": len(after) - 1 if len(after) > before else None,
+                "new_chain_name": after[-1].name if len(after) > before else None,
+            }
+        except Exception as e:
+            self.log_message("Error inserting rack chain: " + str(e))
+            raise
+
+    def _get_rack_chains(self, track_index, device_index):
+        try:
+            rack = self._rack_or_raise(track_index, device_index)
+            chains = []
+            for chain_index, chain in enumerate(rack.chains):
+                mixer = chain.mixer_device
+                entry = {
+                    "chain_index": chain_index,
+                    "name": str(chain.name),
+                    "mute": bool(chain.mute),
+                    "solo": bool(chain.solo),
+                    "device_count": len(list(chain.devices)),
+                    "devices": [str(d.name) for d in chain.devices],
+                }
+                if hasattr(mixer, "volume"):
+                    entry["volume"] = float(mixer.volume.value)
+                if hasattr(mixer, "panning"):
+                    entry["pan"] = float(mixer.panning.value)
+                if hasattr(chain, "in_note"):
+                    entry["in_note"] = int(chain.in_note)
+                chains.append(entry)
+            return {
+                "track_index": track_index,
+                "device_index": device_index,
+                "chains": chains,
+            }
+        except Exception as e:
+            self.log_message("Error getting rack chains: " + str(e))
+            raise
+
+    def _set_chain_name(self, track_index, device_index, chain_index, name):
+        try:
+            _, chain = self._chain_or_raise(track_index, device_index, chain_index)
+            chain.name = name
+            return {
+                "chain_index": chain_index,
+                "name": str(chain.name),
+            }
+        except Exception as e:
+            self.log_message("Error setting chain name: " + str(e))
+            raise
+
+    def _set_chain_volume(self, track_index, device_index, chain_index, volume=None, pan=None, mute=None, solo=None):
+        try:
+            _, chain = self._chain_or_raise(track_index, device_index, chain_index)
+            result = {"chain_index": chain_index}
+            if mute is not None:
+                chain.mute = bool(mute)
+                result["mute"] = bool(chain.mute)
+            if solo is not None:
+                chain.solo = bool(solo)
+                result["solo"] = bool(chain.solo)
+            mixer = chain.mixer_device
+            if volume is not None and hasattr(mixer, "volume"):
+                mixer.volume.value = max(0.0, min(1.0, float(volume)))
+                result["volume"] = float(mixer.volume.value)
+            if pan is not None and hasattr(mixer, "panning"):
+                mixer.panning.value = max(-1.0, min(1.0, float(pan)))
+                result["pan"] = float(mixer.panning.value)
+            return result
+        except Exception as e:
+            self.log_message("Error setting chain volume: " + str(e))
+            raise
+
+    def _set_drum_chain_note(self, track_index, device_index, chain_index, note):
+        try:
+            rack = self._rack_or_raise(track_index, device_index)
+            if not getattr(rack, "has_drum_pads", False):
+                raise ValueError("Device is not a Drum Rack")
+            _, chain = self._chain_or_raise(track_index, device_index, chain_index)
+            if not hasattr(chain, "in_note"):
+                raise RuntimeError("Drum chain in_note requires Live 12.3+")
+            chain.in_note = int(note)
+            return {
+                "chain_index": chain_index,
+                "in_note": int(chain.in_note),
+            }
+        except Exception as e:
+            self.log_message("Error setting drum chain note: " + str(e))
             raise
 
     def _get_master_info(self):

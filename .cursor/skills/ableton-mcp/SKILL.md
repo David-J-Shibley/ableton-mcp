@@ -31,22 +31,23 @@ Suno (generate WAV) → Ableton (arrange, mix, master) → SoundCloud → Distro
 
 Default export path for masters: `~/.distrokid-mcp/prepared-audio/`
 
-## Available tools (73)
+## Available tools (111)
 
 | Category | Tools |
 |----------|-------|
 | Session | `get_session_info`, `set_tempo`, `set_time_signature`, `get_playback_position`, `undo`, `redo`, `start_recording`, `stop_recording`, `set_overdub`, `capture_midi` |
 | Tracks | `get_track_info`, `create_midi_track`, `create_audio_track`, `delete_track`, `duplicate_track`, `set_track_name`, `set_track_mute`, `set_track_solo`, `set_track_arm`, `get_track_routing`, `set_track_input_routing`, `set_track_output_routing` |
-| Mixer | `set_track_volume`, `set_track_pan`, `set_send_level`, `set_master_volume`, `get_return_tracks` |
-| Devices | `get_device_parameters`, `set_device_parameter` |
-| Clips | `create_clip`, `create_audio_clip`, `add_notes_to_clip`, `get_clip_info`, `get_clip_notes`, `set_clip_notes`, `remove_clip_notes`, `delete_clip`, `duplicate_clip`, `set_clip_name`, `set_clip_color`, `set_clip_loop`, `fire_clip`, `stop_clip` |
+| Mixer | `set_track_volume`, `set_track_pan`, `set_send_level`, `set_master_volume`, `get_return_tracks`, `get_master_info` |
+| Devices | `get_device_parameters`, `set_device_parameter`, `get_device_info`, `get_device_tree`, `get_device_parameters_detailed`, `set_device_parameter_by_name`, `insert_device`, `delete_device`, `load_effect` |
+| Racks | `get_rack_info`, `get_rack_macros`, `set_rack_macro`, `get_macro_mappings`, `add_rack_macro`, `remove_rack_macro`, `set_rack_visible_macros`, `randomize_rack_macros`, `get_rack_variations`, `store_rack_variation`, `recall_rack_variation`, `delete_rack_variation`, `insert_rack_chain`, `get_rack_chains`, `set_chain_name`, `set_chain_volume`, `set_drum_chain_note`, `set_chain_device_parameter` |
+| Clips | `create_clip`, `create_audio_clip`, `add_notes_to_clip`, `get_clip_info`, `get_clip_notes`, `set_clip_notes`, `remove_clip_notes`, `delete_clip`, `duplicate_clip`, `set_clip_name`, `set_clip_color`, `set_clip_loop`, `set_clip_gain`, `set_clip_pitch`, `set_clip_warp_mode`, `set_clip_automation`, `get_clip_automation`, `fire_clip`, `stop_clip` |
 | Scenes | `get_scenes`, `create_scene`, `fire_scene`, `stop_scene`, `set_scene_name` |
 | Transport | `start_playback`, `stop_playback` |
-| Browser | `get_browser_tree`, `get_browser_items_at_path`, `search_browser`, `load_instrument_or_effect`, `load_drum_kit` |
-| Arrangement | `switch_to_arrangement_view`, `set_arrangement_time`, `jump_to_time`, `get_arrangement_clips`, `get_arrangement_length`, `set_arrangement_loop`, `duplicate_to_arrangement`, `create_arrangement_clip`, `import_audio_to_arrangement`, `move_arrangement_clip`, `get_locators`, `create_locator`, `delete_locator`, `set_locator_name`, `get_take_lanes`, `create_take_lane` |
+| Browser | `get_browser_tree`, `get_browser_items_at_path`, `search_browser`, `find_browser_by_path`, `load_instrument_or_effect`, `load_preset_by_path`, `load_drum_kit` |
+| Arrangement | `switch_to_arrangement_view`, `set_arrangement_time`, `jump_to_time`, `get_arrangement_clips`, `get_arrangement_length`, `set_arrangement_loop`, `duplicate_to_arrangement`, `create_arrangement_clip`, `import_audio_to_arrangement`, `move_arrangement_clip`, `get_locators`, `create_locator`, `delete_locator`, `set_locator_name`, `get_take_lanes`, `create_take_lane`, `import_audio_to_take_lane`, `add_notes_to_arrangement_clip`, `set_arrangement_clip_notes`, `remove_arrangement_clip_notes`, `get_arrangement_clip_notes` |
 | Groove | `get_groove_pool`, `apply_groove` |
 
-See `docs/FEATURE_GAP.md` for Phase 3 roadmap.
+See `docs/FEATURE_GAP.md` for remaining limitations.
 
 ## Common workflows
 
