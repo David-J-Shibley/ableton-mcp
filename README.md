@@ -1,29 +1,46 @@
-# AbletonMCP - Ableton Live Model Context Protocol Integration
+# AbletonMCP
 
-> **Shibley fork** — based on [ahujasid/ableton-mcp](https://github.com/ahujasid/ableton-mcp) (2.7k★, battle-tested).  
-> Part of the **Suno → Ableton → SoundCloud → DistroKid** pipeline.  
-> See `.cursor/skills/ableton-mcp/SKILL.md` for pipeline workflows.
+Connect [Ableton Live](https://www.ableton.com/) to AI assistants through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io). Control sessions, tracks, clips, devices, racks, and arrangement view from Claude, Cursor, or other MCP clients.
 
-### Quick setup (this fork)
+Extended fork of [ahujasid/ableton-mcp](https://github.com/ahujasid/ableton-mcp) with additional tools for racks, presets, device chains, and arrangement editing. See `docs/FEATURE_GAP.md` for the full tool list and known limits.
+
+[![smithery badge](https://smithery.ai/badge/@ahujasid/ableton-mcp)](https://smithery.ai/server/@ahujasid/ableton-mcp)
+
+## Features
+
+- **111 MCP tools** — session, tracks, mixer, clips, scenes, browser, arrangement, grooves, racks, and macros
+- **Two-way socket bridge** — MCP server ↔ Remote Script running inside Live
+- **Browser integration** — search and load instruments, effects, and presets
+- **Rack control** — macros, chains, variations (Live 11+), native device insertion (Live 12.3+)
+- **Telemetry opt-out** — disable with `ABLETON_MCP_DISABLE_TELEMETRY=true`
+
+## Quick start
+
+### 1. Install the MCP server
 
 ```bash
-cd ~/projects/ableton-mcp
-python3 -m venv .venv && source .venv/bin/activate
+git clone https://github.com/David-J-Shibley/ableton-mcp.git
+cd ableton-mcp
+python3 -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -e .
 python scripts/install_remote_script.py
 ```
 
-Then in Ableton: **Preferences → Link, Tempo & MIDI → Control Surface → AbletonMCP** (Input/Output: None).
+### 2. Enable the Remote Script in Ableton
 
-After updating the Remote Script, re-run `python scripts/install_remote_script.py` and restart Ableton.
+1. Open Ableton Live
+2. **Preferences → Link, Tempo & MIDI**
+3. Control Surface: **AbletonMCP**
+4. Input / Output: **None**
 
-**111 MCP tools** — see `docs/FEATURE_GAP.md`. Multi-machine setup: `docs/SETUP_OTHER_MACHINE.md`.
+After updating the Remote Script, re-run `python scripts/install_remote_script.py` and **restart Ableton**.
 
-### MCP client setup
+### 3. Configure your MCP client
 
-Use the **local fork** (not `uvx ableton-mcp` — that installs upstream without Phase 4 tools). Replace `/ABSOLUTE/PATH/TO/ableton-mcp` with your clone path.
+Use the **local install** (not `uvx ableton-mcp` from PyPI — that is the upstream package without this fork's extra tools). Replace `/ABSOLUTE/PATH/TO/ableton-mcp` with your clone path.
 
-**Only run one MCP instance** — Cursor *or* Claude, not both at once.
+**Only run one MCP instance at a time** — Cursor or Claude, not both.
 
 #### Cursor
 
@@ -44,7 +61,7 @@ Reload MCP servers in Cursor settings after saving.
 
 #### Claude Desktop
 
-1. Open **Claude → Settings → Developer → Edit Config**
+1. **Claude → Settings → Developer → Edit Config**
 2. Edit `claude_desktop_config.json`:
    - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
    - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
@@ -65,10 +82,10 @@ Reload MCP servers in Cursor settings after saving.
 }
 ```
 
-4. **Quit Claude completely** (Cmd+Q on Mac) and reopen
-5. Confirm the connector icon shows `ableton` as connected
+4. Quit Claude completely and reopen
+5. Confirm the connector shows `ableton` as connected
 
-**Verify:** Ask Claude to run `get_session_info` (Ableton must be open with a set loaded).
+**Verify:** Ask the assistant to run `get_session_info` (Ableton must be open with a set loaded).
 
 **Logs:** `~/Library/Logs/Claude/` (macOS) or `%APPDATA%\Claude\logs\` (Windows)
 
@@ -86,184 +103,72 @@ claude mcp add-json ableton '{
 }' --scope global
 ```
 
-Start a session and run `/mcp` to confirm `ableton` is connected.
+Run `/mcp` in a session to confirm the server is connected.
 
-On Apple Silicon Mac, keep `DYLD_LIBRARY_PATH` if Python fails to start. Omit it on other platforms if not needed.
+On Apple Silicon Mac, keep `DYLD_LIBRARY_PATH` if Python fails to start. Omit on other platforms if not needed.
 
----
-[![smithery badge](https://smithery.ai/badge/@ahujasid/ableton-mcp)](https://smithery.ai/server/@ahujasid/ableton-mcp)
+## Prerequisites
 
-AbletonMCP connects Ableton Live to Claude AI through the Model Context Protocol (MCP), allowing Claude to directly interact with and control Ableton Live. This integration enables prompt-assisted music production, end-to-end track creation, and Live session and arrangement manipulation.
+- Ableton Live 10 or newer (Live 12 recommended; some tools require Live 11+ or 12.3+)
+- Python 3.10+
 
-### Join the Community
-
-Give feedback, get inspired, and build on top of the MCP: [Discord](https://discord.gg/3ZrMyGKnaU). Made by [Siddharth](https://x.com/sidahuj)
-
-## Features
-
-- **Two-way communication**: Connect Claude AI to Ableton Live through a socket-based server
-- **Track manipulation**: Create, modify, and manipulate MIDI and audio tracks
-- **Instrument and effect selection**: Claude can access and load the right instruments, effects and sounds from Ableton's library
-- **Clip creation**: Create and edit MIDI clips with notes
-- **Arrangement view composition**: Build full songs autonomously in Arrangement View, including sections like intro, buildup, drop, breakdown, and outro
-- **Session control**: Start and stop playback, fire clips, and control transport across Session View and Arrangement View
-- **Anonymous telemetry**: Usage tracking to help improve the tool (can be disabled)
-
-## Components
-
-The system consists of two main components:
-
-1. **Ableton Remote Script** (`Ableton_Remote_Script/__init__.py`): A MIDI Remote Script for Ableton Live that creates a socket server to receive and execute commands
-2. **MCP Server** (`server.py`): A Python server that implements the Model Context Protocol and connects to the Ableton Remote Script
-
-## Installation
-
-### Installing via Smithery
-
-To install the **upstream** package automatically via [Smithery](https://smithery.ai/server/@ahujasid/ableton-mcp) (does not include this fork's Phase 4 tools):
-
-```bash
-npx -y @smithery/cli install @ahujasid/ableton-mcp --client claude
-```
-
-For this fork, use the **MCP client setup** steps at the top of the README instead.
-
-### Prerequisites
-
-- Ableton Live 10 or newer
-- Python 3.8 or newer
-- [uv package manager](https://astral.sh/uv)
-
-If you're on Mac, please install uv as:
-```
-brew install uv
-```
-
-Otherwise, install from [uv's official website][https://docs.astral.sh/uv/getting-started/installation/]
-
-⚠️ Do not proceed before installing UV
-
-### Installing the Ableton Remote Script
-
-[Follow along with the setup instructions video](https://youtu.be/iJWJqyVuPS8)
-
-1. Download the `AbletonMCP_Remote_Script/__init__.py` file from this repo
-
-2. Copy the folder to Ableton's MIDI Remote Scripts directory. Different OS and versions have different locations. **One of these should work, you might have to look**:
-
-   **For macOS:**
-   - Method 1: Go to Applications > Right-click on Ableton Live app → Show Package Contents → Navigate to:
-     `Contents/App-Resources/MIDI Remote Scripts/`
-   - Method 2: If it's not there in the first method, use the direct path (replace XX with your version number):
-     `/Users/[Username]/Library/Preferences/Ableton/Live XX/User Remote Scripts`
-   
-   **For Windows:**
-   - Method 1:
-     C:\Users\[Username]\AppData\Roaming\Ableton\Live x.x.x\Preferences\User Remote Scripts 
-   - Method 2:
-     `C:\ProgramData\Ableton\Live XX\Resources\MIDI Remote Scripts\`
-   - Method 3:
-     `C:\Program Files\Ableton\Live XX\Resources\MIDI Remote Scripts\`
-   *Note: Replace XX with your Ableton version number (e.g., 10, 11, 12)*
-
-4. Create a folder called 'AbletonMCP' in the Remote Scripts directory and paste the downloaded '\_\_init\_\_.py' file
-
-3. Launch Ableton Live
-
-4. Go to Settings/Preferences → Link, Tempo & MIDI
-
-5. In the Control Surface dropdown, select "AbletonMCP"
-
-6. Set Input and Output to "None"
+Multi-machine setup: `docs/SETUP_OTHER_MACHINE.md`
 
 ## Usage
 
-### Starting the Connection
+1. Open Ableton with a set loaded and the AbletonMCP control surface enabled
+2. Start your MCP client (Claude Desktop, Claude Code, or Cursor)
+3. Ask the assistant to control Live — e.g. "Get session info", "Create a MIDI track", "Set tempo to 128"
 
-1. Ensure the Ableton Remote Script is loaded in Ableton Live
-2. Make sure the MCP server is configured in Claude Desktop or Cursor
-3. The connection should be established automatically when you interact with Claude
+### Example prompts
 
-### Using with Claude
-
-Once the config file has been set on Claude, and the remote script is running in Ableton, you will see a hammer icon with tools for the Ableton MCP.
-
-## Capabilities
-
-- Get session and track information
-- Create and modify MIDI and audio tracks
-- Create full song arrangements from start to finish in Arrangement View
-- Create, edit, and trigger clips
-- Control playback
-- Load instruments and effects from Ableton's browser
-- Add notes to MIDI clips
-- Change tempo and other session parameters
-
-## Example Commands
-
-Here are some examples of what you can ask Claude to do:
-
-- "Create an 80s synthwave track" [Demo](https://youtu.be/VH9g66e42XA)
-- "Create a Metro Boomin style hip-hop beat"
-- "Create a full arrangement with an intro, buildup, drop, breakdown, and outro"
-- "Create a new MIDI track with a synth bass instrument"
+- "Get information about the current Ableton session"
+- "Create a new MIDI track with Operator"
 - "Add reverb to my drums"
 - "Create a 4-bar MIDI clip with a simple melody"
-- "Get information about the current Ableton session"
-- "Load a 808 drum rack into the selected track"
-- "Add a jazz chord progression to the clip in track 1"
 - "Set the tempo to 120 BPM"
-- "Play the clip in track 2"
+- "Load a drum rack on track 0"
+- "Build an arrangement with intro, verse, and chorus locators"
 
+[Demo video](https://youtu.be/iJWJqyVuPS8) · [Synthwave demo](https://youtu.be/VH9g66e42XA)
+
+## Architecture
+
+| Component | Role |
+|-----------|------|
+| `AbletonMCP_Remote_Script/` | MIDI Remote Script inside Live; receives JSON commands over TCP |
+| `MCP_Server/` | MCP server that exposes tools and forwards commands to Live |
+
+Commands are JSON objects with `type` and optional `params`. Responses include `status` and `result` or `message`.
+
+Default socket port: **9877** (override with `ABLETON_PORT`).
 
 ## Troubleshooting
 
-- **Connection issues**: Make sure the Ableton Remote Script is loaded, and the MCP server is configured on Claude
-- **Timeout errors**: Try simplifying your requests or breaking them into smaller steps
-- **Have you tried turning it off and on again?**: If you're still having connection errors, try restarting both Claude and Ableton Live
-
-## Technical Details
-
-### Communication Protocol
-
-The system uses a simple JSON-based protocol over TCP sockets:
-
-- Commands are sent as JSON objects with a `type` and optional `params`
-- Responses are JSON objects with a `status` and `result` or `message`
-
-### Limitations & Security Considerations
-
-- Creating complex musical arrangements might need to be broken down into smaller steps
-- The tool is designed to work with Ableton's default devices and browser items
-- Always save your work before extensive experimentation
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
+| Problem | Fix |
+|---------|-----|
+| Connection failed | Control Surface must be **AbletonMCP**; restart Live |
+| Unknown command | Re-run `python scripts/install_remote_script.py` and restart Live |
+| `insert_device` not supported | Stale Remote Script, or Live version below 12.3 |
+| Timeout on audio import | Large files may take up to 60s; use Live 12+ |
+| Works in one client only | Disable ableton in the other client's MCP config |
 
 ## Telemetry
 
-AbletonMCP collects anonymous usage data to help improve the tool. This includes:
-- Tool usage statistics (which features are used)
-- Session information (for daily/monthly active user counts)
-- Error rates and performance metrics
-
-No personal information, project names, or audio content is collected.
-
-### Opting Out
-
-To disable telemetry, set one of these environment variables before starting the MCP server:
+Anonymous usage stats (tool names, error rates) are collected by default. No audio or project content is sent.
 
 ```bash
 export ABLETON_MCP_DISABLE_TELEMETRY=true
 ```
 
-Or use any of these alternatives:
-- `DISABLE_TELEMETRY=true`
-- `MCP_DISABLE_TELEMETRY=true`
+Or add `"ABLETON_MCP_DISABLE_TELEMETRY": "true"` to the `env` block in your MCP config.
 
-For Claude Desktop or Cursor, add `"ABLETON_MCP_DISABLE_TELEMETRY": "true"` to the `env` block in your MCP config (see **MCP client setup** above).
+## Contributing
+
+Contributions welcome — open a Pull Request on [GitHub](https://github.com/David-J-Shibley/ableton-mcp).
+
+Upstream: [ahujasid/ableton-mcp](https://github.com/ahujasid/ableton-mcp) · Community: [Discord](https://discord.gg/3ZrMyGKnaU)
 
 ## Disclaimer
 
-This is a third-party integration and not made by Ableton.
+Third-party integration — not affiliated with Ableton.
