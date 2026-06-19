@@ -1,0 +1,777 @@
+{
+  "plugin": "Serum 2",
+  "version": 1,
+  "parameter_count": 128,
+  "source": "https://gist.github.com/0xdevalias/1b85af59724b79c6484f660ab6982744",
+  "setup_note": "Add these serum_name values in Ableton's plugin Configure panel (max 128). See docs/SERUM2_SETUP.md.",
+  "parameters": [
+    {
+      "alias": "main_vol",
+      "serum_name": "Main Vol",
+      "category": "global",
+      "description": "Master output level"
+    },
+    {
+      "alias": "main_tuning",
+      "serum_name": "Main Tuning",
+      "category": "global",
+      "description": "Global fine tuning"
+    },
+    {
+      "alias": "amp",
+      "serum_name": "Amp",
+      "category": "global",
+      "description": "Global amp / voicing"
+    },
+    {
+      "alias": "porta_time",
+      "serum_name": "Porta Time",
+      "category": "global",
+      "description": "Portamento glide time"
+    },
+    {
+      "alias": "porta_curve",
+      "serum_name": "Porta Curve",
+      "category": "global",
+      "description": "Portamento curve"
+    },
+    {
+      "alias": "mono_toggle",
+      "serum_name": "Mono Toggle",
+      "category": "global",
+      "description": "Mono / poly mode"
+    },
+    {
+      "alias": "legato",
+      "serum_name": "Legato",
+      "category": "global",
+      "description": "Legato mode"
+    },
+    {
+      "alias": "bend_up",
+      "serum_name": "Bend Up",
+      "category": "global",
+      "description": "Pitch bend up range"
+    },
+    {
+      "alias": "bend_down",
+      "serum_name": "Bend Down",
+      "category": "global",
+      "description": "Pitch bend down range"
+    },
+    {
+      "alias": "swing",
+      "serum_name": "Swing",
+      "category": "global",
+      "description": "Global swing amount"
+    },
+    {
+      "alias": "swing_div",
+      "serum_name": "Swing Div",
+      "category": "global",
+      "description": "Swing division"
+    },
+    {
+      "alias": "a_enable",
+      "serum_name": "A Enable",
+      "category": "osc_a",
+      "description": "Oscillator A on/off"
+    },
+    {
+      "alias": "a_level",
+      "serum_name": "A Level",
+      "category": "osc_a",
+      "description": "Oscillator A level"
+    },
+    {
+      "alias": "a_pan",
+      "serum_name": "A Pan",
+      "category": "osc_a",
+      "description": "Oscillator A pan"
+    },
+    {
+      "alias": "a_octave",
+      "serum_name": "A Octave",
+      "category": "osc_a",
+      "description": "Oscillator A octave"
+    },
+    {
+      "alias": "a_semi",
+      "serum_name": "A Semi",
+      "category": "osc_a",
+      "description": "Oscillator A semitones"
+    },
+    {
+      "alias": "a_fine",
+      "serum_name": "A Fine",
+      "category": "osc_a",
+      "description": "Oscillator A fine tune"
+    },
+    {
+      "alias": "a_position",
+      "serum_name": "A Position",
+      "category": "osc_a",
+      "description": "Wavetable / sample position"
+    },
+    {
+      "alias": "a_unison",
+      "serum_name": "A Unison",
+      "category": "osc_a",
+      "description": "Unison voices"
+    },
+    {
+      "alias": "a_uni_detune",
+      "serum_name": "A Uni Detune",
+      "category": "osc_a",
+      "description": "Unison detune"
+    },
+    {
+      "alias": "a_uni_blend",
+      "serum_name": "A Uni Blend",
+      "category": "osc_a",
+      "description": "Unison blend"
+    },
+    {
+      "alias": "a_uni_width",
+      "serum_name": "A Uni Width",
+      "category": "osc_a",
+      "description": "Stereo spread"
+    },
+    {
+      "alias": "a_uni_warp",
+      "serum_name": "A Uni Warp",
+      "category": "osc_a",
+      "description": "Warp amount"
+    },
+    {
+      "alias": "a_scan_rate",
+      "serum_name": "A Scan Rate",
+      "category": "osc_a",
+      "description": "Wavetable scan rate"
+    },
+    {
+      "alias": "a_pitch_track",
+      "serum_name": "A Pitch Track",
+      "category": "osc_a",
+      "description": "Pitch tracking"
+    },
+    {
+      "alias": "b_enable",
+      "serum_name": "B Enable",
+      "category": "osc_b",
+      "description": "Oscillator B on/off"
+    },
+    {
+      "alias": "b_level",
+      "serum_name": "B Level",
+      "category": "osc_b",
+      "description": "Oscillator B level"
+    },
+    {
+      "alias": "b_pan",
+      "serum_name": "B Pan",
+      "category": "osc_b",
+      "description": "Oscillator B pan"
+    },
+    {
+      "alias": "b_octave",
+      "serum_name": "B Octave",
+      "category": "osc_b",
+      "description": "Oscillator B octave"
+    },
+    {
+      "alias": "b_semi",
+      "serum_name": "B Semi",
+      "category": "osc_b",
+      "description": "Oscillator B semitones"
+    },
+    {
+      "alias": "b_fine",
+      "serum_name": "B Fine",
+      "category": "osc_b",
+      "description": "Oscillator B fine tune"
+    },
+    {
+      "alias": "b_position",
+      "serum_name": "B Position",
+      "category": "osc_b",
+      "description": "Wavetable / sample position"
+    },
+    {
+      "alias": "b_unison",
+      "serum_name": "B Unison",
+      "category": "osc_b",
+      "description": "Unison voices"
+    },
+    {
+      "alias": "b_uni_detune",
+      "serum_name": "B Uni Detune",
+      "category": "osc_b",
+      "description": "Unison detune"
+    },
+    {
+      "alias": "b_uni_blend",
+      "serum_name": "B Uni Blend",
+      "category": "osc_b",
+      "description": "Unison blend"
+    },
+    {
+      "alias": "b_uni_width",
+      "serum_name": "B Uni Width",
+      "category": "osc_b",
+      "description": "Stereo spread"
+    },
+    {
+      "alias": "b_uni_warp",
+      "serum_name": "B Uni Warp",
+      "category": "osc_b",
+      "description": "Warp amount"
+    },
+    {
+      "alias": "b_scan_rate",
+      "serum_name": "B Scan Rate",
+      "category": "osc_b",
+      "description": "Wavetable scan rate"
+    },
+    {
+      "alias": "b_pitch_track",
+      "serum_name": "B Pitch Track",
+      "category": "osc_b",
+      "description": "Pitch tracking"
+    },
+    {
+      "alias": "c_enable",
+      "serum_name": "C Enable",
+      "category": "osc_c",
+      "description": "Oscillator C on/off"
+    },
+    {
+      "alias": "c_level",
+      "serum_name": "C Level",
+      "category": "osc_c",
+      "description": "Oscillator C level"
+    },
+    {
+      "alias": "c_position",
+      "serum_name": "C Position",
+      "category": "osc_c",
+      "description": "Oscillator C position"
+    },
+    {
+      "alias": "c_octave",
+      "serum_name": "C Octave",
+      "category": "osc_c",
+      "description": "Oscillator C octave"
+    },
+    {
+      "alias": "sub_enable",
+      "serum_name": "Sub Enable",
+      "category": "sub_noise",
+      "description": "Sub oscillator on/off"
+    },
+    {
+      "alias": "sub_level",
+      "serum_name": "Sub Level",
+      "category": "sub_noise",
+      "description": "Sub oscillator level"
+    },
+    {
+      "alias": "sub_pan",
+      "serum_name": "Sub Pan",
+      "category": "sub_noise",
+      "description": "Sub oscillator pan"
+    },
+    {
+      "alias": "sub_octave",
+      "serum_name": "Sub Octave",
+      "category": "sub_noise",
+      "description": "Sub oscillator octave"
+    },
+    {
+      "alias": "noise_enable",
+      "serum_name": "Noise Enable",
+      "category": "sub_noise",
+      "description": "Noise oscillator on/off"
+    },
+    {
+      "alias": "noise_level",
+      "serum_name": "Noise Level",
+      "category": "sub_noise",
+      "description": "Noise oscillator level"
+    },
+    {
+      "alias": "noise_pan",
+      "serum_name": "Noise Pan",
+      "category": "sub_noise",
+      "description": "Noise oscillator pan"
+    },
+    {
+      "alias": "filter1_on",
+      "serum_name": "Filter 1 On",
+      "category": "filter",
+      "description": "Filter on/off"
+    },
+    {
+      "alias": "filter1_freq",
+      "serum_name": "Filter 1 Freq",
+      "category": "filter",
+      "description": "Filter cutoff"
+    },
+    {
+      "alias": "filter1_res",
+      "serum_name": "Filter 1 Res",
+      "category": "filter",
+      "description": "Filter resonance"
+    },
+    {
+      "alias": "filter1_drive",
+      "serum_name": "Filter 1 Drive",
+      "category": "filter",
+      "description": "Filter drive"
+    },
+    {
+      "alias": "filter1_type",
+      "serum_name": "Filter 1 Type",
+      "category": "filter",
+      "description": "Filter type"
+    },
+    {
+      "alias": "filter1_level",
+      "serum_name": "Filter 1 Level",
+      "category": "filter",
+      "description": "Filter input level"
+    },
+    {
+      "alias": "filter1_wet",
+      "serum_name": "Filter 1 Wet",
+      "category": "filter",
+      "description": "Filter wet/dry"
+    },
+    {
+      "alias": "filter1_var",
+      "serum_name": "Filter 1 Var",
+      "category": "filter",
+      "description": "Filter variation / morph"
+    },
+    {
+      "alias": "filter2_on",
+      "serum_name": "Filter 2 On",
+      "category": "filter",
+      "description": "Filter on/off"
+    },
+    {
+      "alias": "filter2_freq",
+      "serum_name": "Filter 2 Freq",
+      "category": "filter",
+      "description": "Filter cutoff"
+    },
+    {
+      "alias": "filter2_res",
+      "serum_name": "Filter 2 Res",
+      "category": "filter",
+      "description": "Filter resonance"
+    },
+    {
+      "alias": "filter2_drive",
+      "serum_name": "Filter 2 Drive",
+      "category": "filter",
+      "description": "Filter drive"
+    },
+    {
+      "alias": "filter2_type",
+      "serum_name": "Filter 2 Type",
+      "category": "filter",
+      "description": "Filter type"
+    },
+    {
+      "alias": "filter2_level",
+      "serum_name": "Filter 2 Level",
+      "category": "filter",
+      "description": "Filter input level"
+    },
+    {
+      "alias": "filter2_wet",
+      "serum_name": "Filter 2 Wet",
+      "category": "filter",
+      "description": "Filter wet/dry"
+    },
+    {
+      "alias": "filter2_var",
+      "serum_name": "Filter 2 Var",
+      "category": "filter",
+      "description": "Filter variation / morph"
+    },
+    {
+      "alias": "env1_attack",
+      "serum_name": "Env 1 Attack",
+      "category": "env1",
+      "description": "Envelope 1 Attack time"
+    },
+    {
+      "alias": "env1_hold",
+      "serum_name": "Env 1 Hold",
+      "category": "env1",
+      "description": "Envelope 1 Hold time"
+    },
+    {
+      "alias": "env1_decay",
+      "serum_name": "Env 1 Decay",
+      "category": "env1",
+      "description": "Envelope 1 Decay time"
+    },
+    {
+      "alias": "env1_sustain",
+      "serum_name": "Env 1 Sustain",
+      "category": "env1",
+      "description": "Envelope 1 Sustain level"
+    },
+    {
+      "alias": "env1_release",
+      "serum_name": "Env 1 Release",
+      "category": "env1",
+      "description": "Envelope 1 Release time"
+    },
+    {
+      "alias": "env1_atk_curve",
+      "serum_name": "Env 1 Atk Curve",
+      "category": "env1",
+      "description": "Envelope 1 Attack curve"
+    },
+    {
+      "alias": "env1_dec_curve",
+      "serum_name": "Env 1 Dec Curve",
+      "category": "env1",
+      "description": "Envelope 1 Decay curve"
+    },
+    {
+      "alias": "env2_attack",
+      "serum_name": "Env 2 Attack",
+      "category": "env2",
+      "description": "Envelope 2 Attack time"
+    },
+    {
+      "alias": "env2_hold",
+      "serum_name": "Env 2 Hold",
+      "category": "env2",
+      "description": "Envelope 2 Hold time"
+    },
+    {
+      "alias": "env2_decay",
+      "serum_name": "Env 2 Decay",
+      "category": "env2",
+      "description": "Envelope 2 Decay time"
+    },
+    {
+      "alias": "env2_sustain",
+      "serum_name": "Env 2 Sustain",
+      "category": "env2",
+      "description": "Envelope 2 Sustain level"
+    },
+    {
+      "alias": "env2_release",
+      "serum_name": "Env 2 Release",
+      "category": "env2",
+      "description": "Envelope 2 Release time"
+    },
+    {
+      "alias": "env2_atk_curve",
+      "serum_name": "Env 2 Atk Curve",
+      "category": "env2",
+      "description": "Envelope 2 Attack curve"
+    },
+    {
+      "alias": "env2_dec_curve",
+      "serum_name": "Env 2 Dec Curve",
+      "category": "env2",
+      "description": "Envelope 2 Decay curve"
+    },
+    {
+      "alias": "env3_attack",
+      "serum_name": "Env 3 Attack",
+      "category": "env3",
+      "description": "Envelope 3 Attack time"
+    },
+    {
+      "alias": "env3_hold",
+      "serum_name": "Env 3 Hold",
+      "category": "env3",
+      "description": "Envelope 3 Hold time"
+    },
+    {
+      "alias": "env3_decay",
+      "serum_name": "Env 3 Decay",
+      "category": "env3",
+      "description": "Envelope 3 Decay time"
+    },
+    {
+      "alias": "env3_sustain",
+      "serum_name": "Env 3 Sustain",
+      "category": "env3",
+      "description": "Envelope 3 Sustain level"
+    },
+    {
+      "alias": "env3_release",
+      "serum_name": "Env 3 Release",
+      "category": "env3",
+      "description": "Envelope 3 Release time"
+    },
+    {
+      "alias": "env3_atk_curve",
+      "serum_name": "Env 3 Atk Curve",
+      "category": "env3",
+      "description": "Envelope 3 Attack curve"
+    },
+    {
+      "alias": "env3_dec_curve",
+      "serum_name": "Env 3 Dec Curve",
+      "category": "env3",
+      "description": "Envelope 3 Decay curve"
+    },
+    {
+      "alias": "env4_attack",
+      "serum_name": "Env 4 Attack",
+      "category": "env4",
+      "description": "Envelope 4 Attack time"
+    },
+    {
+      "alias": "env4_hold",
+      "serum_name": "Env 4 Hold",
+      "category": "env4",
+      "description": "Envelope 4 Hold time"
+    },
+    {
+      "alias": "env4_decay",
+      "serum_name": "Env 4 Decay",
+      "category": "env4",
+      "description": "Envelope 4 Decay time"
+    },
+    {
+      "alias": "env4_sustain",
+      "serum_name": "Env 4 Sustain",
+      "category": "env4",
+      "description": "Envelope 4 Sustain level"
+    },
+    {
+      "alias": "env4_release",
+      "serum_name": "Env 4 Release",
+      "category": "env4",
+      "description": "Envelope 4 Release time"
+    },
+    {
+      "alias": "env4_atk_curve",
+      "serum_name": "Env 4 Atk Curve",
+      "category": "env4",
+      "description": "Envelope 4 Attack curve"
+    },
+    {
+      "alias": "env4_dec_curve",
+      "serum_name": "Env 4 Dec Curve",
+      "category": "env4",
+      "description": "Envelope 4 Decay curve"
+    },
+    {
+      "alias": "lfo1_rate",
+      "serum_name": "LFO 1 Rate",
+      "category": "lfo1",
+      "description": "LFO 1 LFO rate"
+    },
+    {
+      "alias": "lfo1_smooth",
+      "serum_name": "LFO 1 Smooth",
+      "category": "lfo1",
+      "description": "LFO 1 LFO smoothing"
+    },
+    {
+      "alias": "lfo1_rise",
+      "serum_name": "LFO 1 Rise",
+      "category": "lfo1",
+      "description": "LFO 1 LFO fade-in"
+    },
+    {
+      "alias": "lfo1_delay",
+      "serum_name": "LFO 1 Delay",
+      "category": "lfo1",
+      "description": "LFO 1 LFO start delay"
+    },
+    {
+      "alias": "lfo1_phase",
+      "serum_name": "LFO 1 Phase",
+      "category": "lfo1",
+      "description": "LFO 1 LFO phase offset"
+    },
+    {
+      "alias": "lfo2_rate",
+      "serum_name": "LFO 2 Rate",
+      "category": "lfo2",
+      "description": "LFO 2 LFO rate"
+    },
+    {
+      "alias": "lfo2_smooth",
+      "serum_name": "LFO 2 Smooth",
+      "category": "lfo2",
+      "description": "LFO 2 LFO smoothing"
+    },
+    {
+      "alias": "lfo2_rise",
+      "serum_name": "LFO 2 Rise",
+      "category": "lfo2",
+      "description": "LFO 2 LFO fade-in"
+    },
+    {
+      "alias": "lfo2_delay",
+      "serum_name": "LFO 2 Delay",
+      "category": "lfo2",
+      "description": "LFO 2 LFO start delay"
+    },
+    {
+      "alias": "lfo2_phase",
+      "serum_name": "LFO 2 Phase",
+      "category": "lfo2",
+      "description": "LFO 2 LFO phase offset"
+    },
+    {
+      "alias": "lfo3_rate",
+      "serum_name": "LFO 3 Rate",
+      "category": "lfo3",
+      "description": "LFO 3 LFO rate"
+    },
+    {
+      "alias": "lfo3_smooth",
+      "serum_name": "LFO 3 Smooth",
+      "category": "lfo3",
+      "description": "LFO 3 LFO smoothing"
+    },
+    {
+      "alias": "lfo3_rise",
+      "serum_name": "LFO 3 Rise",
+      "category": "lfo3",
+      "description": "LFO 3 LFO fade-in"
+    },
+    {
+      "alias": "lfo3_delay",
+      "serum_name": "LFO 3 Delay",
+      "category": "lfo3",
+      "description": "LFO 3 LFO start delay"
+    },
+    {
+      "alias": "lfo3_phase",
+      "serum_name": "LFO 3 Phase",
+      "category": "lfo3",
+      "description": "LFO 3 LFO phase offset"
+    },
+    {
+      "alias": "lfo4_rate",
+      "serum_name": "LFO 4 Rate",
+      "category": "lfo4",
+      "description": "LFO 4 LFO rate"
+    },
+    {
+      "alias": "lfo4_smooth",
+      "serum_name": "LFO 4 Smooth",
+      "category": "lfo4",
+      "description": "LFO 4 LFO smoothing"
+    },
+    {
+      "alias": "lfo4_rise",
+      "serum_name": "LFO 4 Rise",
+      "category": "lfo4",
+      "description": "LFO 4 LFO fade-in"
+    },
+    {
+      "alias": "lfo4_delay",
+      "serum_name": "LFO 4 Delay",
+      "category": "lfo4",
+      "description": "LFO 4 LFO start delay"
+    },
+    {
+      "alias": "lfo4_phase",
+      "serum_name": "LFO 4 Phase",
+      "category": "lfo4",
+      "description": "LFO 4 LFO phase offset"
+    },
+    {
+      "alias": "fx_main_1",
+      "serum_name": "FX Main Param 1",
+      "category": "fx_main",
+      "description": "Main FX rack param"
+    },
+    {
+      "alias": "fx_main_2",
+      "serum_name": "FX Main Param 2",
+      "category": "fx_main",
+      "description": "Main FX rack param"
+    },
+    {
+      "alias": "fx_main_3",
+      "serum_name": "FX Main Param 3",
+      "category": "fx_main",
+      "description": "Main FX rack param"
+    },
+    {
+      "alias": "fx_main_4",
+      "serum_name": "FX Main Param 4",
+      "category": "fx_main",
+      "description": "Main FX rack param"
+    },
+    {
+      "alias": "fx_main_5",
+      "serum_name": "FX Main Param 5",
+      "category": "fx_main",
+      "description": "Main FX rack param"
+    },
+    {
+      "alias": "fx_main_6",
+      "serum_name": "FX Main Param 6",
+      "category": "fx_main",
+      "description": "Main FX rack param"
+    },
+    {
+      "alias": "fx_main_7",
+      "serum_name": "FX Main Param 7",
+      "category": "fx_main",
+      "description": "Main FX rack param"
+    },
+    {
+      "alias": "fx_main_8",
+      "serum_name": "FX Main Param 8",
+      "category": "fx_main",
+      "description": "Main FX rack param"
+    },
+    {
+      "alias": "fx_bus1_1",
+      "serum_name": "FX Bus 1 Param 1",
+      "category": "fx_bus1",
+      "description": "FX bus 1 param"
+    },
+    {
+      "alias": "fx_bus1_2",
+      "serum_name": "FX Bus 1 Param 2",
+      "category": "fx_bus1",
+      "description": "FX bus 1 param"
+    },
+    {
+      "alias": "fx_bus1_3",
+      "serum_name": "FX Bus 1 Param 3",
+      "category": "fx_bus1",
+      "description": "FX bus 1 param"
+    },
+    {
+      "alias": "fx_bus1_4",
+      "serum_name": "FX Bus 1 Param 4",
+      "category": "fx_bus1",
+      "description": "FX bus 1 param"
+    },
+    {
+      "alias": "mod_wheel",
+      "serum_name": "Mod Wheel",
+      "category": "performance",
+      "description": "Mod wheel value"
+    },
+    {
+      "alias": "pitch_bend",
+      "serum_name": "Pitch Bend",
+      "category": "performance",
+      "description": "Pitch bend wheel"
+    }
+  ]
+}

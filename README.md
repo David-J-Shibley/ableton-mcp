@@ -8,7 +8,7 @@ Extended fork of [ahujasid/ableton-mcp](https://github.com/ahujasid/ableton-mcp)
 
 ## Features
 
-- **111 MCP tools** — session, tracks, mixer, clips, scenes, browser, arrangement, grooves, racks, and macros
+- **119 MCP tools** — session, tracks, mixer, clips, scenes, browser, arrangement, grooves, racks, macros, and **Serum 2** (128 curated params)
 - **Two-way socket bridge** — MCP server ↔ Remote Script running inside Live
 - **Browser integration** — search and load instruments, effects, and presets
 - **Rack control** — macros, chains, variations (Live 11+), native device insertion (Live 12.3+)
@@ -112,7 +112,7 @@ On Apple Silicon Mac, keep `DYLD_LIBRARY_PATH` if Python fails to start. Omit on
 - Ableton Live 10 or newer (Live 12 recommended; some tools require Live 11+ or 12.3+)
 - Python 3.10+
 
-Multi-machine setup: `docs/SETUP_OTHER_MACHINE.md`
+Multi-machine setup: `docs/SETUP_OTHER_MACHINE.md` · Serum 2: `docs/SERUM2_SETUP.md`
 
 ## Usage
 

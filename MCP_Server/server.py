@@ -17,6 +17,7 @@ from .phase2_tools import register_phase2_tools
 from .phase3_tools import register_phase3_tools
 from .phase4_tools import register_phase4_tools
 from .browser_tools import register_browser_tools
+from .serum_tools import register_serum_tools
 
 load_dotenv()
 
@@ -899,6 +900,13 @@ register_phase4_tools(
 )
 
 register_browser_tools(
+    mcp,
+    get_ableton_connection=get_ableton_connection,
+    telemetry_tool=telemetry_tool,
+    rich_telemetry_tool=rich_telemetry_tool,
+)
+
+register_serum_tools(
     mcp,
     get_ableton_connection=get_ableton_connection,
     telemetry_tool=telemetry_tool,

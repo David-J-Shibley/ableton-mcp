@@ -2,7 +2,7 @@
 
 **Indexing:** 0-based track/clip/scene/device/locator/macro/chain indices.
 
-## Complete — v1.6.0 (111 tools)
+## Complete — v1.7.0 (119 tools)
 
 | Phase | Highlights |
 |-------|------------|
@@ -10,6 +10,7 @@
 | Phase 2 | `duplicate_track`, routing, recording, arrangement import/locators, `search_browser`, grooves |
 | Phase 3 | `set_clip_gain/pitch/warp_mode`, clip automation, `load_effect`, arrangement MIDI edit, take-lane import, `get_master_info` |
 | Phase 4 | `insert_device`, `delete_device`, `load_preset_by_path`, rack chains/macros/variations, `get_device_parameters_detailed`, `set_device_parameter_by_name`, M4L introspection |
+| Serum 2 | `list_serum_param_aliases`, `load_serum`, `get_serum_params`, `set_serum_param(s)`, `list_serum_presets`, `set_serum_preset` — curated 128 params; see `docs/SERUM2_SETUP.md` |
 
 ## Partially closed (Phase 4)
 

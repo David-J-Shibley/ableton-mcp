@@ -258,7 +258,8 @@ class AbletonMCP(ControlSurface):
                                  "store_rack_variation", "recall_rack_variation",
                                  "delete_rack_variation", "insert_rack_chain",
                                  "set_chain_name", "set_chain_volume", "set_drum_chain_note",
-                                 "set_device_parameter_by_name", "set_chain_device_parameter"]:
+                                 "set_device_parameter_by_name", "set_chain_device_parameter",
+                                 "set_plugin_preset"]:
                 # Use a thread-safe approach with a response queue
                 response_queue = queue.Queue()
                 
@@ -611,6 +612,12 @@ class AbletonMCP(ControlSurface):
                                 params.get("parameter_index", 0),
                                 params.get("value", 0.0),
                                 params.get("parameter_name"))
+                        elif command_type == "set_plugin_preset":
+                            result = self._set_plugin_preset(
+                                params.get("track_index", 0),
+                                params.get("device_index", 0),
+                                params.get("preset_index"),
+                                params.get("preset_name"))
 
                         # Put the result in the queue
                         response_queue.put({"status": "success", "result": result})
@@ -739,6 +746,13 @@ class AbletonMCP(ControlSurface):
             elif command_type == "find_browser_by_path":
                 response["result"] = self._find_browser_by_path(
                     params.get("path", ""), params.get("max_results", 10))
+            elif command_type == "get_plugin_presets":
+                response["result"] = self._get_plugin_presets(
+                    params.get("track_index", 0), params.get("device_index", 0))
+            elif command_type == "find_plugin_device":
+                response["result"] = self._find_plugin_device(
+                    params.get("track_index", 0),
+                    params.get("name_contains", "Serum"))
             else:
                 response["status"] = "error"
                 response["message"] = "Unknown command: " + command_type
@@ -2984,6 +2998,100 @@ class AbletonMCP(ControlSurface):
             }
         except Exception as e:
             self.log_message("Error setting drum chain note: " + str(e))
+            raise
+
+    def _plugin_device_or_raise(self, track_index, device_index):
+        device = self._device_or_raise(track_index, device_index)
+        class_name = str(device.class_name)
+        if class_name not in ("PluginDevice", "AuPluginDevice"):
+            raise ValueError("Device is not a plugin: " + class_name)
+        return device
+
+    def _find_plugin_device(self, track_index, name_contains="Serum"):
+        try:
+            track = self._track_or_raise(track_index)
+            needle = (name_contains or "").strip().lower()
+            matches = []
+            for device_index, device in enumerate(track.devices):
+                names = [
+                    str(getattr(device, "name", "") or ""),
+                    str(getattr(device, "class_display_name", "") or ""),
+                    str(getattr(device, "class_name", "") or ""),
+                ]
+                haystack = " ".join(names).lower()
+                if not needle or needle in haystack:
+                    matches.append({
+                        "device_index": device_index,
+                        "name": str(device.name),
+                        "class_name": str(device.class_name),
+                        "class_display_name": str(getattr(device, "class_display_name", device.name)),
+                    })
+            return {
+                "track_index": track_index,
+                "query": name_contains,
+                "matches": matches,
+                "device_index": matches[0]["device_index"] if matches else None,
+            }
+        except Exception as e:
+            self.log_message("Error finding plugin device: " + str(e))
+            raise
+
+    def _get_plugin_presets(self, track_index, device_index):
+        try:
+            device = self._plugin_device_or_raise(track_index, device_index)
+            presets = []
+            if hasattr(device, "presets"):
+                for preset_index, preset_name in enumerate(device.presets):
+                    presets.append({
+                        "index": preset_index,
+                        "name": str(preset_name),
+                    })
+            selected_index = -1
+            if hasattr(device, "selected_preset_index"):
+                try:
+                    selected_index = int(device.selected_preset_index)
+                except Exception:
+                    selected_index = -1
+            return {
+                "track_index": track_index,
+                "device_index": device_index,
+                "device_name": str(device.name),
+                "preset_count": len(presets),
+                "selected_preset_index": selected_index,
+                "presets": presets,
+            }
+        except Exception as e:
+            self.log_message("Error getting plugin presets: " + str(e))
+            raise
+
+    def _set_plugin_preset(self, track_index, device_index, preset_index=None, preset_name=None):
+        try:
+            device = self._plugin_device_or_raise(track_index, device_index)
+            if not hasattr(device, "presets") or not hasattr(device, "selected_preset_index"):
+                raise RuntimeError("Plugin preset API not available on this device")
+            presets = list(device.presets)
+            if preset_name:
+                target = preset_name.strip().lower()
+                for index, name in enumerate(presets):
+                    if str(name).lower() == target:
+                        preset_index = index
+                        break
+                if preset_index is None:
+                    raise ValueError("Preset not found: " + preset_name)
+            if preset_index is None:
+                raise ValueError("preset_index or preset_name is required")
+            preset_index = int(preset_index)
+            if preset_index < 0 or preset_index >= len(presets):
+                raise IndexError("Preset index out of range")
+            device.selected_preset_index = preset_index
+            return {
+                "track_index": track_index,
+                "device_index": device_index,
+                "preset_index": preset_index,
+                "preset_name": str(presets[preset_index]),
+            }
+        except Exception as e:
+            self.log_message("Error setting plugin preset: " + str(e))
             raise
 
     def _get_master_info(self):
