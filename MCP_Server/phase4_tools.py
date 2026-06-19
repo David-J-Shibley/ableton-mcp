@@ -62,28 +62,6 @@ def register_phase4_tools(
             return f"Error deleting device: {e}"
 
     @mcp.tool()
-    @rich_telemetry_tool("load_preset_by_path")
-    def load_preset_by_path(
-        ctx: Context, track_index: int, path: str, user_prompt: str = ""
-    ) -> str:
-        """Load a .adg/.adv preset or rack from a filesystem path via the browser."""
-        try:
-            return _send("load_preset_by_path", {"track_index": track_index, "path": path})
-        except Exception as e:
-            return f"Error loading preset: {e}"
-
-    @mcp.tool()
-    @telemetry_tool("find_browser_by_path")
-    def find_browser_by_path(
-        ctx: Context, path: str, max_results: int = 10, user_prompt: str = ""
-    ) -> str:
-        """Search the Ableton browser for items matching a filesystem path or filename."""
-        try:
-            return _send("find_browser_by_path", {"path": path, "max_results": max_results})
-        except Exception as e:
-            return f"Error finding browser item: {e}"
-
-    @mcp.tool()
     @telemetry_tool("get_device_info")
     def get_device_info(
         ctx: Context, track_index: int, device_index: int, user_prompt: str = ""

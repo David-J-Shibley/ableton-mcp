@@ -16,6 +16,7 @@ from .extended_tools import register_extended_tools
 from .phase2_tools import register_phase2_tools
 from .phase3_tools import register_phase3_tools
 from .phase4_tools import register_phase4_tools
+from .browser_tools import register_browser_tools
 
 load_dotenv()
 
@@ -891,6 +892,13 @@ register_phase3_tools(
 )
 
 register_phase4_tools(
+    mcp,
+    get_ableton_connection=get_ableton_connection,
+    telemetry_tool=telemetry_tool,
+    rich_telemetry_tool=rich_telemetry_tool,
+)
+
+register_browser_tools(
     mcp,
     get_ableton_connection=get_ableton_connection,
     telemetry_tool=telemetry_tool,

@@ -369,17 +369,6 @@ def register_phase2_tools(
     # ── Browser & groove ──────────────────────────────────────────────────────
 
     @mcp.tool()
-    @rich_telemetry_tool("search_browser")
-    def search_browser(
-        ctx: Context, query: str, category_type: str = "all", user_prompt: str = ""
-    ) -> str:
-        """Search Ableton's browser by name (instruments, effects, samples, etc.)."""
-        try:
-            return _send("search_browser", {"query": query, "category_type": category_type})
-        except Exception as e:
-            return f"Error searching browser: {e}"
-
-    @mcp.tool()
     @telemetry_tool("get_groove_pool")
     def get_groove_pool(ctx: Context, user_prompt: str = "") -> str:
         """List grooves in the groove pool."""

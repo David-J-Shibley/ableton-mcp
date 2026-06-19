@@ -696,7 +696,9 @@ class AbletonMCP(ControlSurface):
             elif command_type == "search_browser":
                 response["result"] = self._search_browser(
                     params.get("query", ""),
-                    params.get("category_type", "all"))
+                    params.get("category_type", "all"),
+                    params.get("max_results", 25),
+                    params.get("loadable_only", False))
             elif command_type == "get_clip_automation":
                 response["result"] = self._get_clip_automation(
                     params.get("track_index", 0),
@@ -1924,41 +1926,57 @@ class AbletonMCP(ControlSurface):
             self.log_message("Error applying groove: " + str(e))
             raise
 
-    def _search_browser(self, query, category_type="all"):
+    def _search_browser(self, query, category_type="all", max_results=25, loadable_only=False):
         try:
             app = self.application()
             if not app or not hasattr(app, "browser"):
                 raise RuntimeError("Browser is not available")
             browser = app.browser
             results = []
-            query_lower = query.lower()
+            query_lower = (query or "").strip().lower()
+            if not query_lower:
+                raise ValueError("query is required")
+            max_results = max(1, min(100, int(max_results)))
 
-            def walk(item, path):
-                name = getattr(item, "name", "") or ""
-                if query_lower in name.lower():
+            def walk(item, path, depth):
+                if depth > 14 or len(results) >= max_results:
+                    return
+                name = str(getattr(item, "name", "") or "")
+                is_loadable = bool(getattr(item, "is_loadable", False))
+                if loadable_only and not is_loadable:
+                    pass
+                elif query_lower in name.lower() or query_lower in path.lower():
+                    source = None
+                    if hasattr(item, "source"):
+                        try:
+                            source = str(item.source)
+                        except Exception:
+                            pass
                     results.append({
                         "name": name,
                         "path": path,
                         "uri": getattr(item, "uri", None),
-                        "is_loadable": bool(getattr(item, "is_loadable", False)),
+                        "is_loadable": is_loadable,
+                        "is_device": bool(getattr(item, "is_device", False)),
+                        "source": source,
                     })
-                if hasattr(item, "children"):
+                if hasattr(item, "children") and item.children:
                     for child in item.children:
-                        child_path = path + "/" + (getattr(child, "name", "") or "")
-                        walk(child, child_path)
+                        child_name = str(getattr(child, "name", "") or "")
+                        walk(child, path + "/" + child_name, depth + 1)
 
-            roots = []
-            for attr in (
-                "user_library", "packs", "instruments", "sounds", "drums",
-                "audio_effects", "midi_effects", "max_for_live", "plugins",
-            ):
-                if hasattr(browser, attr) and (category_type == "all" or category_type == attr):
-                    roots.append((attr, getattr(browser, attr)))
+            for root_name, root_item in self._browser_category_roots(browser):
+                if category_type != "all" and category_type != root_name:
+                    continue
+                walk(root_item, root_name, 0)
 
-            for root_name, root_item in roots:
-                walk(root_item, root_name)
-
-            return {"query": query, "category": category_type, "items": results}
+            return {
+                "query": query,
+                "category": category_type,
+                "max_results": max_results,
+                "loadable_only": bool(loadable_only),
+                "items": results,
+            }
         except Exception as e:
             self.log_message("Error searching browser: " + str(e))
             raise
@@ -2399,6 +2417,19 @@ class AbletonMCP(ControlSurface):
             track = self._track_or_raise(track_index)
             app = self.application()
             item = self._find_browser_item_by_path(app.browser, path)
+            resolved_via = "path"
+            if not item:
+                matches = self._find_browser_by_path(path, max_results=10).get("items", [])
+                target_base = os.path.basename(self._normalize_filesystem_path(path)).lower()
+                for candidate in matches:
+                    if not candidate.get("is_loadable") or not candidate.get("uri"):
+                        continue
+                    name = str(candidate.get("name", "")).lower()
+                    if name == target_base or name == target_base.rsplit(".", 1)[0]:
+                        item = self._find_browser_item_by_uri(app.browser, candidate["uri"])
+                        if item:
+                            resolved_via = "filename"
+                            break
             if not item:
                 raise ValueError("Preset not found in browser for path: " + str(path))
             devices_before = len(list(track.devices))
@@ -2408,6 +2439,7 @@ class AbletonMCP(ControlSurface):
             return {
                 "loaded": True,
                 "path": path,
+                "resolved_via": resolved_via,
                 "item_name": str(item.name),
                 "uri": getattr(item, "uri", None),
                 "track_index": track_index,
